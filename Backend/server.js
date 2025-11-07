@@ -1,10 +1,10 @@
+// server.js (updated)
 const express = require("express");
 const { MongoClient, ObjectId } = require("mongodb");
 const cors = require("cors");
 require("dotenv").config();
 
 const PORT = process.env.PORT || 5000;
-
 
 const countryMap = { denmark: 0, finland: 1, iceland: 2, norway: 3, sweden: 4 };
 const productMap = {
@@ -27,7 +27,7 @@ function encodeProduct(p) {
 function random_forest(productCode, month, countryCode) {
   if (productCode < 0 || countryCode < 0 || !month) return 0;
   const seed = productCode * 97 + countryCode * 53 + Number(month) * 11;
-  const base = 200 + (seed % 200); 
+  const base = 200 + (seed % 200);
   const seasonal = [0, 0, 10, 25, 40, 50, 35, 20, 5, 0, -5, -10][(month - 1) % 12] || 0;
   return Math.max(0, Math.round(base + seasonal));
 }
@@ -51,11 +51,9 @@ async function connectCluster() {
   try {
     await client.connect();
     console.log("Connected to MongoDB Cluster");
-    // Create indexes that help the new features
     const usersDB = client.db("UserDB");
     await usersDB.collection("users").createIndex({ username: 1 }, { unique: true });
     console.log("Ensured index: UserDB.users.username");
-
   } catch (err) {
     console.error("MongoDB Connection Failed:", err);
     process.exit(1);
@@ -71,14 +69,14 @@ async function getUserAndDBByUserId(userId) {
 
   await userDB.collection("delivery_agents").createIndex({ location: 1, delivery_name: 1 });
   await userDB.collection("inventory").createIndex({ product_name: 1, country: 1, month: 1 });
+  await userDB.collection("current_stock").createIndex({ product_name: 1, country: 1 }, { unique: true });
+
   return { user, userDB };
 }
-
 
 app.get("/", (_req, res) => {
   res.json({ ok: true, service: "Nordic Retail Backend", time: new Date().toISOString() });
 });
-
 
 app.post("/create-db", async (req, res) => {
   const { username, email, region } = req.body || {};
@@ -101,10 +99,11 @@ app.post("/create-db", async (req, res) => {
     const userDB = client.db(username);
     await userDB.createCollection("inventory").catch(() => {});
     await userDB.createCollection("delivery_agents").catch(() => {});
-
+    await userDB.createCollection("current_stock").catch(() => {}); // NEW
 
     await userDB.collection("delivery_agents").createIndex({ location: 1, delivery_name: 1 });
     await userDB.collection("inventory").createIndex({ product_name: 1, country: 1, month: 1 });
+    await userDB.collection("current_stock").createIndex({ product_name: 1, country: 1 }, { unique: true }); // NEW
 
     res.status(201).json({
       message: `Database '${username}' created`,
@@ -127,6 +126,7 @@ app.post("/add-item/:userId", async (req, res) => {
     month,
     cost_price,
     selling_price,
+    current_price, 
     sales,
   } = req.body || {};
 
@@ -153,13 +153,23 @@ app.post("/add-item/:userId", async (req, res) => {
     };
 
     const result = await userDB.collection("inventory").insertOne(doc);
+
+    await userDB.collection("current_stock").updateOne(
+      { product_name, country },
+      {
+        $inc: { quantity: Number(quantity) },
+        $setOnInsert: { createdAt: new Date() },
+        ...(current_price != null ? { $set: { current_price: Number(current_price), updatedAt: new Date() } } : { $set: { updatedAt: new Date() } }),
+      },
+      { upsert: true }
+    );
+
     res.status(201).json({ message: "Item added successfully", itemId: result.insertedId });
   } catch (err) {
     console.error("Error adding item:", err);
     res.status(500).json({ error: "Failed to add item" });
   }
 });
-
 
 app.get("/getItems/:userId", async (req, res) => {
   const { userId } = req.params;
@@ -173,7 +183,6 @@ app.get("/getItems/:userId", async (req, res) => {
     res.status(500).json({ error: "Failed to fetch items" });
   }
 });
-
 
 app.post("/addDeliveryAgent/:userId", async (req, res) => {
   const { userId } = req.params;
@@ -190,7 +199,7 @@ app.post("/addDeliveryAgent/:userId", async (req, res) => {
     const result = await userDB.collection("delivery_agents").insertOne({
       delivery_name,
       delivery_number,
-      location, 
+      location,
       createdAt: new Date(),
     });
 
@@ -203,7 +212,6 @@ app.post("/addDeliveryAgent/:userId", async (req, res) => {
     res.status(500).json({ error: "Failed to add Agent" });
   }
 });
-
 
 app.get("/getDeliveryAgents/:userId", async (req, res) => {
   const { userId } = req.params;
@@ -224,7 +232,6 @@ app.get("/getDeliveryAgents/:userId", async (req, res) => {
     res.status(500).json({ error: "Failed to fetch agents" });
   }
 });
-
 
 app.get("/getDeliveryAgentsByLocation/:userId/:location", async (req, res) => {
   const { userId, location } = req.params;
@@ -247,17 +254,13 @@ app.get("/getDeliveryAgentsByLocation/:userId/:location", async (req, res) => {
   }
 });
 
-
-//Need to update 2nd line
 app.post("/forecast", async (req, res) => {
   try {
-    //Bro lets update this lateree
     const { country, product_name, month, avg_price, promotion, previous_sales, season_index, economic_index, stock_level } = req.body;
 
     if (!country || !product_name || !month) {
       return res.status(400).json({ error: "Missing required fields: country, product_name, month" });
     }
-
 
     const pythonResponse = await fetch("http://localhost:8000/forecast", {
       method: "POST",
@@ -302,7 +305,6 @@ app.post("/forecast", async (req, res) => {
   }
 });
 
-
 app.get("/analytics/:userId", async (req, res) => {
   const { userId } = req.params;
   try {
@@ -340,6 +342,121 @@ app.get("/analytics/:userId", async (req, res) => {
   }
 });
 
+
+app.post("/set-price/:userId", async (req, res) => {
+  const { userId } = req.params;
+  const { product_name, country, current_price } = req.body || {};
+  if (!product_name || !country || current_price == null) {
+    return res.status(400).json({ error: "product_name, country, current_price are required" });
+  }
+
+  try {
+    const { user, userDB } = await getUserAndDBByUserId(userId);
+    if (!user) return res.status(404).json({ error: "User not found" });
+
+    const r = await userDB.collection("current_stock").updateOne(
+      { product_name, country },
+      {
+        $set: { current_price: Number(current_price), updatedAt: new Date() },
+        $setOnInsert: { quantity: 0, createdAt: new Date() },
+      },
+      { upsert: true }
+    );
+    res.json({ success: true, upserted: !!r.upsertedId });
+  } catch (e) {
+    console.error("Error setting price:", e);
+    res.status(500).json({ error: "Failed to set price" });
+  }
+});
+
+app.get("/stock/:userId", async (req, res) => {
+  const { userId } = req.params;
+  const { product_name, country } = req.query;
+
+  try {
+    const { user, userDB } = await getUserAndDBByUserId(userId);
+    if (!user) return res.status(404).json({ error: "User not found" });
+
+    const q = {};
+    if (product_name) q.product_name = product_name;
+    if (country) q.country = country;
+
+    const docs = await userDB.collection("current_stock").find(q).sort({ country: 1, product_name: 1 }).toArray();
+    res.json({ success: true, stock: docs });
+  } catch (e) {
+    console.error("Error getting stock:", e);
+    res.status(500).json({ error: "Failed to get stock" });
+  }
+});
+
+
+app.post("/bill/:userId", async (req, res) => {
+  const { userId } = req.params;
+  const { items } = req.body || {};
+  if (!Array.isArray(items) || items.length === 0) {
+    return res.status(400).json({ error: "items[] required" });
+  }
+
+  try {
+    const { user, userDB } = await getUserAndDBByUserId(userId);
+    if (!user) return res.status(404).json({ error: "User not found" });
+
+    const results = [];
+    let grandTotal = 0;
+
+    for (const it of items) {
+      const { product_name, country } = it;
+      const qty = Number(it.quantity || 0);
+      if (!product_name || !country || qty <= 0) {
+        results.push({ product_name, country, ok: false, error: "Invalid line" });
+        continue;
+      }
+
+      const updated = await userDB.collection("current_stock").findOneAndUpdate(
+        { product_name, country },
+        { $inc: { quantity: -qty }, $set: { updatedAt: new Date() } },
+        { returnDocument: "after", upsert: true }
+      );
+
+      const doc = updated.value || { quantity: 0, current_price: 0 };
+      if (doc.quantity < 0) {
+        await userDB.collection("current_stock").updateOne(
+          { product_name, country },
+          { $set: { quantity: 0, updatedAt: new Date() } }
+        );
+        doc.quantity = 0;
+      }
+
+      const price = Number(doc.current_price || 0);
+      const lineTotal = price * qty;
+      grandTotal += lineTotal;
+
+      if (doc.quantity === 0) {
+        console.warn(`[STOCK-EMPTY] userId=${userId} product="${product_name}" country="${country}"`);
+      }
+
+      results.push({
+        product_name,
+        country,
+        sold_qty: qty,
+        price_each: price,
+        line_total: Number(lineTotal.toFixed(2)),
+        remaining_qty: doc.quantity,
+      });
+    }
+
+    res.json({
+      success: true,
+      items: results,
+      grand_total: Number(grandTotal.toFixed(2)),
+      message: "Billing completed and stock updated.",
+    });
+  } catch (e) {
+    console.error("Error in /bill:", e);
+    res.status(500).json({ error: "Failed to complete billing" });
+  }
+});
+
 app.listen(PORT, () => {
-  console.log(`🚀 Server running on http://localhost:${PORT}`);
+  console.log(`Server running on http://localhost:${PORT}`);
 });

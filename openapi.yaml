@@ -1,0 +1,263 @@
+
+openapi: 3.0.3
+info:
+  title: Nordic Retail Backend API
+  version: "1.0.0"
+  description: |
+    Backend for Nordic Retail Demand Forecasting & Inventory Management.
+    Supports per-retailer databases, inventory, delivery agents, forecasting, analytics,
+    pricing, and billing/stock updates.
+servers:
+  - url: http://localhost:5000
+
+tags:
+  - name: Health
+  - name: Users
+  - name: Inventory
+  - name: DeliveryAgents
+  - name: Forecast
+  - name: Analytics
+  - name: Pricing
+  - name: Billing
+  - name: Stock
+
+paths:
+  /:
+    get:
+      tags: [Health]
+      summary: Health check
+      responses:
+        '200':
+          description: Service status
+
+  /create-db:
+    post:
+      tags: [Users]
+      summary: Create a retailer account and per-user DB
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [username]
+              properties:
+                username: { type: string }
+                email: { type: string }
+                region: { type: string }
+      responses:
+        '201':
+          description: Retailer created
+        '400':
+          description: Missing or duplicate username
+
+  /add-item/{userId}:
+    post:
+      tags: [Inventory]
+      summary: Add inventory record and update current stock
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [product_name, quantity, country, month]
+              properties:
+                product_name: { type: string }
+                quantity: { type: number }
+                expiryDate: { type: string }
+                country: { type: string }
+                month: { type: integer, minimum: 1, maximum: 12 }
+                cost_price: { type: number }
+                selling_price: { type: number }
+                current_price: { type: number, description: "Initial set price used for billing; also stored in current_stock" }
+                sales: { type: number }
+      responses:
+        '201':
+          description: Item added
+
+  /getItems/{userId}:
+    get:
+      tags: [Inventory]
+      summary: Get all inventory entries for a retailer
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: List of inventory items
+
+  /getDeliveryAgents/{userId}:
+    get:
+      tags: [DeliveryAgents]
+      summary: Get all delivery agents (optionally by location query)
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema: { type: string }
+        - name: location
+          in: query
+          schema: { type: string }
+      responses:
+        '200':
+          description: Agents list
+
+  /addDeliveryAgent/{userId}:
+    post:
+      tags: [DeliveryAgents]
+      summary: Add a delivery agent for a location
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [delivery_name, delivery_number, location]
+              properties:
+                delivery_name: { type: string }
+                delivery_number: { type: string }
+                location: { type: string }
+      responses:
+        '201':
+          description: Agent created
+
+  /getDeliveryAgentsByLocation/{userId}/{location}:
+    get:
+      tags: [DeliveryAgents]
+      summary: Get agents by path-location
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema: { type: string }
+        - name: location
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Agents list
+
+  /forecast:
+    post:
+      tags: [Forecast]
+      summary: Call Python ML microservice to forecast demand
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [country, product_name, month]
+              properties:
+                country: { type: string }
+                product_name: { type: string }
+                month: { type: integer, minimum: 1, maximum: 12 }
+                avg_price: { type: number }
+                promotion: { type: number }
+                previous_sales: { type: number }
+                season_index: { type: number }
+                economic_index: { type: number }
+                stock_level: { type: number }
+      responses:
+        '200':
+          description: Forecast results
+
+  /analytics/{userId}:
+    get:
+      tags: [Analytics]
+      summary: Aggregated analytics for a retailer
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Analytics summary
+
+  /set-price/{userId}:
+    post:
+      tags: [Pricing]
+      summary: Set or update current price for a product-country (current_stock)
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [product_name, country, current_price]
+              properties:
+                product_name: { type: string }
+                country: { type: string }
+                current_price: { type: number }
+      responses:
+        '200':
+          description: Current price updated
+
+  /stock/{userId}:
+    get:
+      tags: [Stock]
+      summary: Get current stock by optional product/country filter
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema: { type: string }
+        - name: product_name
+          in: query
+          schema: { type: string }
+        - name: country
+          in: query
+          schema: { type: string }
+      responses:
+        '200':
+          description: Current stock list
+
+  /bill/{userId}:
+    post:
+      tags: [Billing]
+      summary: Create a bill, decrement stock atomically, and return totals
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [items]
+              properties:
+                items:
+                  type: array
+                  items:
+                    type: object
+                    required: [product_name, country, quantity]
+                    properties:
+                      product_name: { type: string }
+                      country: { type: string }
+                      quantity: { type: number, minimum: 1 }
+      responses:
+        '200':
+          description: Billing summary with updated stock

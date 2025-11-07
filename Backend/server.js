@@ -1,8 +1,13 @@
 const express = require("express");
+// const tls = require('tls');
+// tls.DEFAULT_MIN_VERSION = 'TLSv1.2';
+// tls.DEFAULT_MAX_VERSION = 'TLSv1.2';
+// console.log('OpenSSL:', process.versions.openssl, 'TLS range:', tls.DEFAULT_MIN_VERSION, '→', tls.DEFAULT_MAX_VERSION);
+
 const { MongoClient, ObjectId } = require("mongodb");
 const cors = require("cors");
-const cacheMiddleware = require("./middleware/cacheMiddleware");
-const { clearCache } = require("./utils/cacheUtils");
+// const cacheMiddleware = require("./middleware/cacheMiddleware");
+// const { clearCache } = require("./utils/cacheUtils");
 
 
 require("dotenv").config();
@@ -68,7 +73,7 @@ if (!process.env.MONGO_URI) {
 
 const client = new MongoClient(process.env.MONGO_URI, {
   tls: true,
-  tlsAllowInvalidCertificates: true,
+  tlsAllowInvalidCertificates: false,
   serverSelectionTimeoutMS: 10000,
 });
 
@@ -192,8 +197,6 @@ app.post("/add-item/:userId", async (req, res) => {
       },
       { upsert: true }
     );
-    await clearCache(`/analytics/${req.params.userId}*`);
-     await clearCache(`/top-sold/${req.params.userId}*`);
     res.status(201).json({ message: "Item added successfully", itemId: result.insertedId });
   } catch (err) {
     console.error("Error adding item:", err);
@@ -335,7 +338,7 @@ app.post("/forecast", async (req, res) => {
   }
 });
 
-app.get("/analytics/:userId",cacheMiddleware, async (req, res) => {
+app.get("/analytics/:userId", async (req, res) => {
   const { userId } = req.params;
   try {
     const { user, userDB } = await getUserAndDBByUserId(userId);
@@ -599,7 +602,7 @@ app.post("/dynamic-pricing/:userId", async (req, res) => {
   }
 });
 
-app.get("/top-sold/:userId",cacheMiddleware, async (req, res) => {
+app.get("/top-sold/:userId",async (req, res) => {
   const { userId } = req.params;
   const limit = Number(req.query.limit) || 5;
 
@@ -662,7 +665,7 @@ app.get("/top-sold/:userId",cacheMiddleware, async (req, res) => {
 });
 
 
-app.get("/regional-top/:country",cacheMiddleware, async (req, res) => {
+app.get("/regional-top/:country",async (req, res) => {
   const { country } = req.params;
   const limit = Number(req.query.limit) || 5;
 

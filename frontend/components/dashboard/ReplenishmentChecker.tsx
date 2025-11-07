@@ -1,6 +1,7 @@
 // components/dashboard/ReplenishmentChecker.tsx
 'use client';
 import { useState } from 'react';
+import { api } from '@/lib/api';
 
 interface Props {
   userId: string;
@@ -12,7 +13,7 @@ interface ReplenishResult {
   needsRestock: boolean;
   orderPlaced: boolean;
 }
-const BACK_END_URL = process.env.NEXT_PUBLIC_BACK_END_URL;
+
 export function ReplenishmentChecker({ userId }: Props) {
   const [results, setResults] = useState<ReplenishResult[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -24,12 +25,9 @@ export function ReplenishmentChecker({ userId }: Props) {
     setResults([]);
     
     try {
-      const res = await fetch(`${BACK_END_URL}/replenish/check/${userId}`, {
-        method: 'POST',
-      });
-      if (!res.ok) throw new Error('Failed to run check');
+      const response = await api.replenishCheck(userId);
+      const data: ReplenishResult[] = await response.json();
       
-      const data: ReplenishResult[] = await res.json();
       setResults(data);
       if (data.length === 0) {
         setMessage('All items are sufficiently stocked.');

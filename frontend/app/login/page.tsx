@@ -1,44 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 // Import for email/password sign-in
 import { signInWithEmailAndPassword } from "firebase/auth";
 // No longer need googleProvider
 import { auth } from "@/lib/firebase";
-
-// --- ATTENTION ---
-// Make sure your .env.local file is set up
-// const BACK_END_URL = process.env.NEXT_PUBLIC_BACK_END_URL;
-const BACK_END_URL = "https://backend-lnia.onrender.com";
-const LOCAL_BACK_END_URL = "http://localhost:5000";
-
-// Helper function to try multiple backend URLs
-const tryBackendCall = async (endpoint: string, options: RequestInit) => {
-  const urls = [BACK_END_URL, LOCAL_BACK_END_URL];
-  
-  for (const baseUrl of urls) {
-    try {
-      console.log(`Trying backend URL: ${baseUrl}${endpoint}`);
-      const response = await fetch(`${baseUrl}${endpoint}`, options);
-      
-      // Check if response is actually JSON
-      const contentType = response.headers.get("content-type");
-      if (!contentType || !contentType.includes("application/json")) {
-        const textResponse = await response.text();
-        console.error(`Non-JSON response from ${baseUrl}:`, textResponse);
-        continue; // Try next URL
-      }
-      
-      return response; // Success
-    } catch (error) {
-      console.error(`Failed to connect to ${baseUrl}:`, error);
-      continue; // Try next URL
-    }
-  }
-  
-  throw new Error("Failed to connect to any backend server");
-};
+import { api, getUserId } from "@/lib/api";
 
 export default function LoginPage() {
   // New state for email and password
@@ -47,6 +15,16 @@ export default function LoginPage() {
 
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
+
+  // Check if user is already logged in and has userId
+  useEffect(() => {
+    const userId = getUserId();
+    if (userId) {
+      console.log("User already has userId in localStorage:", userId);
+      // Redirect to dashboard if already logged in
+      router.push("/dashboard");
+    }
+  }, [router]);
 
   // --- NEW: Handles Email/Password Sign-In ---
   const handleEmailSignIn = async (e: React.FormEvent) => {
@@ -63,30 +41,27 @@ export default function LoginPage() {
       // --- LOGIC FROM PREVIOUS STEP (Unchanged) ---
       // 2. Call your backend for ALL users
       try {
-        const response = await tryBackendCall("/create-db", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            // Send the Firebase ID token for backend authentication
-            "Authorization": `Bearer ${idToken}`,
-          },
-          body: JSON.stringify({
-            // displayName might be null, so use email as a fallback
-            username: user.displayName || user.email || "New User",
-            email: user.email,
-            region: null,
-          }),
-        });
+        const response = await api.createUser({
+          // displayName might be null, so use email as a fallback
+          username: user.displayName || user.email || "New User",
+          email: user.email,
+          region: null,
+        }, idToken);
 
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.message || "Failed to create/get database entry.");
-        }
-
-        // 3. Get response and STORE userId in localStorage
         const data = await response.json();
+        
+        // 3. Get response and STORE userId in localStorage
         if (data.userId) {
           localStorage.setItem("userId", data.userId);
+          console.log("UserId stored in localStorage:", data.userId);
+          
+          // Also store user info for future reference
+          localStorage.setItem("userInfo", JSON.stringify({
+            email: user.email,
+            displayName: user.displayName,
+            loginAt: new Date().toISOString()
+          }));
+          
         } else {
           throw new Error("Backend response is missing 'userId'.");
         }

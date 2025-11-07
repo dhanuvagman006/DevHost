@@ -1,7 +1,8 @@
 // app/dashboard/page.tsx
 
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { getUserId, getUserInfo } from '@/lib/api';
 
 // --- REMOVED MagicBento imports ---
 // import MagicBento, { MagicBentoCard } from '@/components/MagicBento';
@@ -91,14 +92,37 @@ const items = [
 ];
 
 export default function DashboardPage() {
-  // --- Mock User Data (for component props) ---
-  const userId = 'user_abc_123';
-  const userCountry = 'Norway'; // Using this based on your hackathon project
-  // --- End Mock User Data ---
+  // --- Get user data from localStorage ---
+  const [userId, setUserId] = useState<string | null>(null);
+  const [userInfo, setUserInfo] = useState<any>(null);
+  const [userCountry, setUserCountry] = useState<string>('Norway');
+
+  useEffect(() => {
+    // Get user data on component mount
+    const id = getUserId();
+    const info = getUserInfo();
+    
+    setUserId(id);
+    setUserInfo(info);
+    
+    // Set user country from user info or default to Norway
+    if (info?.region) {
+      setUserCountry(info.region);
+    }
+    
+    console.log('📊 Dashboard loaded for user:', id, info);
+  }, []);
+
   type SelectedLocation = { name: string; flag: string } | null;
   const [selectedLocation, setSelectedLocation] =
     useState<SelectedLocation>(null);
   const [isLocationSwitcherOpen, setIsLocationSwitcherOpen] = useState(false);
+
+  // --- Component refresh trigger ---
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
+  const handleItemAdded = () => {
+    setRefreshTrigger(prev => prev + 1);
+  };
 
   // --- REFACTORED: Combined styles into a single Tailwind class string ---
   // This replaces bentoCardStyle, bentoCardClassName, and bentoCardProps
@@ -157,17 +181,17 @@ export default function DashboardPage() {
 
                 {/* Analytics Table (Spans full width of this column) */}
                 <div className={`${bentoCardClasses} md:col-span-2`}>
-                  <AnalyticsTable userId={userId} />
+                  {userId ? <AnalyticsTable userId={userId} /> : <div className="p-6 text-center text-gray-500">Loading user data...</div>}
                 </div>
 
                 {/* Inventory Table (Spans full width of this column) */}
                 <div className={`${bentoCardClasses} md:col-span-2`}>
-                  <InventoryTable userId={userId} />
+                  <InventoryTable userId={userId || undefined} key={refreshTrigger} />
                 </div>
 
                 {/* Top Sold Last Year */}
                 <div className={bentoCardClasses}>
-                  <TopSoldLastYear userId={userId} />
+                  <TopSoldLastYear userId={userId || undefined} />
                 </div>
 
                 {/* Regional Top Sellers */}
@@ -196,30 +220,28 @@ export default function DashboardPage() {
               {/* --- NEW SIDEBAR COMPONENTS START HERE --- */}
 
               <div className={bentoCardClasses}>
-                <AddItemForm userId={userId} />
+                <AddItemForm userId={userId || undefined} onItemAdded={handleItemAdded} />
               </div>
 
               {/* <div className={bentoCardClasses}>
-                   {/* //<BillingForm userId={userId} /> 
-                 </div> */}
+                   {/* //<BillingForm userId={userId} /> 
+                 </div> */}
 
               {/* <div className={bentoCardClasses}>
-                   <AgentsList userId={userId} />
-                 </div> */}
+                   <AgentsList userId={userId} />
+                 </div> */}
 
               <div className={bentoCardClasses}>
-                <AddAgentForm userId={userId} />
+                {userId ? <AddAgentForm userId={userId} /> : <div className="p-6 text-center text-gray-500">Loading user data...</div>}
               </div>
 
               <div className={bentoCardClasses}>
-                <ReplenishmentChecker userId={userId} />
+                {userId ? <ReplenishmentChecker userId={userId} /> : <div className="p-6 text-center text-gray-500">Loading user data...</div>}
               </div>
 
               <div className={bentoCardClasses}>
-                <DynamicPricingForm userId={userId} />
-              </div>
-
-              <div className={bentoCardClasses}>
+                {userId ? <DynamicPricingForm userId={userId} /> : <div className="p-6 text-center text-gray-500">Loading user data...</div>}
+              </div>              <div className={bentoCardClasses}>
                 <ForecastForm />
               </div>
 

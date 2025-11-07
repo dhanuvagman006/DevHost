@@ -1,6 +1,7 @@
 // components/dashboard/BillingForm.tsx
 'use client';
 import { useState, FormEvent } from 'react';
+import { api } from '@/lib/api';
 
 interface Props {
   userId: string;
@@ -11,6 +12,7 @@ export function BillingForm({ userId }: Props) {
     { productId: '', quantity: 1 }
   ]);
   const [message, setMessage] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const handleCartChange = (index: number, field: string, value: string | number) => {
     const newCart = [...cart];
@@ -25,6 +27,7 @@ export function BillingForm({ userId }: Props) {
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setMessage('');
+    setLoading(true);
     
     try {
       // Filter out empty items before sending
@@ -34,19 +37,15 @@ export function BillingForm({ userId }: Props) {
         return;
       }
 
-      const res = await fetch(`${BACK_END_URL}/bill/${userId}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ items: validItems }),
-      });
-
-      if (!res.ok) throw new Error('Billing failed');
+      const response = await api.createBill(userId, { items: validItems });
+      const result = await response.json();
       
-      const result = await res.json();
       setMessage(`Billing successful! Total: $${result.totalPrice}. Invoice ID: ${result.invoiceId}`);
       setCart([{ productId: '', quantity: 1 }]);
     } catch (error) {
       setMessage(error instanceof Error ? error.message : 'An error occurred');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -80,9 +79,10 @@ export function BillingForm({ userId }: Props) {
       </button>
       <button
         type="submit"
-        className="w-full px-4 py-2 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700"
+        disabled={loading}
+        className="w-full px-4 py-2 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
       >
-        Process Payment
+        {loading ? 'Processing...' : 'Process Payment'}
       </button>
       {message && <p className="text-sm text-center text-gray-600 dark:text-gray-400">{message}</p>}
     </form>

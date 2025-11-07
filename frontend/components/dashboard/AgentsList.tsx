@@ -2,11 +2,12 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { DeliveryAgent } from '@/types';
+import { api } from '@/lib/api';
 
 interface Props {
   userId: string;
 }
-const BACK_END_URL = process.env.NEXT_PUBLIC_BACK_END_URL;
+
 export function AgentsList({ userId }: Props) {
   const [agents, setAgents] = useState<DeliveryAgent[]>([]);
   const [loading, setLoading] = useState(true);
@@ -16,9 +17,8 @@ export function AgentsList({ userId }: Props) {
     const fetchAgents = async () => {
       try {
         setLoading(true);
-        const res = await fetch(`${BACK_END_URL}/getDeliveryAgents/${userId}`);
-        if (!res.ok) throw new Error('Failed to fetch agents');
-        const data: DeliveryAgent[] = await res.json();
+        const response = await api.getDeliveryAgents(userId);
+        const data: DeliveryAgent[] = await response.json();
         setAgents(data);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'An unknown error occurred');

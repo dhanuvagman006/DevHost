@@ -1,37 +1,35 @@
 // components/dashboard/DynamicPricingForm.tsx
 'use client';
 import { useState, FormEvent } from 'react';
+import { api } from '@/lib/api';
 
 interface Props {
   userId: string;
 }
-const BACK_END_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
+
 export function DynamicPricingForm({ userId }: Props) {
   const [productId, setProductId] = useState('');
   const [message, setMessage] = useState('');
   const [newPrice, setNewPrice] = useState<number | null>(null);
+  const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setMessage('');
     setNewPrice(null);
+    setLoading(true);
     
     try {
-      // NOTE: Ensure your backend is running, e.g., on http://localhost:8000
-      const res = await fetch(`${BACK_END_URL}/dynamic-pricing/${userId}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ productId }),
-      });
-
-      if (!res.ok) throw new Error('Failed to get optimized price');
+      const response = await api.dynamicPricing(userId, { productId });
+      const result = await response.json();
       
-      const result = await res.json();
       setNewPrice(result.optimizedPrice);
       setMessage(`Optimized price for ${productId} is $${result.optimizedPrice}`);
       setProductId(''); // Clear input on success
     } catch (error) {
       setMessage(error instanceof Error ? error.message : 'An error occurred');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -51,9 +49,10 @@ export function DynamicPricingForm({ userId }: Props) {
       </div>
       <button
         type="submit"
-        className="w-full px-4 py-2 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+        disabled={loading}
+        className="w-full px-4 py-2 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
       >
-        Optimize Price
+        {loading ? 'Optimizing...' : 'Optimize Price'}
       </button>
       {message && (
         <p className={`text-sm text-center ${newPrice ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>

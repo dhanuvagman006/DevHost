@@ -1,31 +1,29 @@
 // components/dashboard/ForecastForm.tsx
 'use client';
 import { useState, FormEvent } from 'react';
+import { api } from '@/lib/api';
 
 export function ForecastForm() {
   const [period, setPeriod] = useState('30'); // Default to 30 days
   const [forecastResult, setForecastResult] = useState<any | null>(null);
   const [message, setMessage] = useState('');
-const BACK_END_URL = process.env.NEXT_PUBLIC_BACK_END_URL;
+  const [loading, setLoading] = useState(false);
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setMessage('');
     setForecastResult(null);
+    setLoading(true);
     
     try {
-      const res = await fetch(`${BACK_END_URL}/forecast`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ days: parseInt(period) }),
-      });
-
-      if (!res.ok) throw new Error('Failed to generate forecast');
+      const response = await api.forecast({ days: parseInt(period) });
+      const result = await response.json();
       
-      const result = await res.json();
       setForecastResult(result.forecastData); // Assuming 'forecastData' is the key
       setMessage('Forecast generated successfully.');
     } catch (error) {
       setMessage(error instanceof Error ? error.message : 'An error occurred');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -47,9 +45,10 @@ const BACK_END_URL = process.env.NEXT_PUBLIC_BACK_END_URL;
       </div>
       <button
         type="submit"
-        className="w-full px-4 py-2 bg-purple-600 text-white rounded-lg font-medium hover:bg-purple-700"
+        disabled={loading}
+        className="w-full px-4 py-2 bg-purple-600 text-white rounded-lg font-medium hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed"
       >
-        Generate Forecast
+        {loading ? 'Generating...' : 'Generate Forecast'}
       </button>
       {message && <p className="text-sm text-center text-gray-600 dark:text-gray-400">{message}</p>}
       {forecastResult && (

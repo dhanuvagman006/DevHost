@@ -1,35 +1,37 @@
 // components/dashboard/AddAgentForm.tsx
 'use client';
 import { useState, FormEvent } from 'react';
+import { api } from '@/lib/api';
 
 interface Props {
   userId: string;
 }
-const BACK_END_URL = process.env.NEXT_PUBLIC_BACK_END_URL;
+
 export function AddAgentForm({ userId }: Props) {
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [message, setMessage] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setMessage('');
+    setLoading(true);
     
     try {
-      const res = await fetch(`${BACK_END_URL}/addDeliveryAgent/${userId}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, phone, status: 'inactive' }),
+      await api.addDeliveryAgent(userId, { 
+        name, 
+        phone, 
+        status: 'inactive' 
       });
-
-      if (!res.ok) throw new Error('Failed to add agent');
       
       setMessage('Agent added successfully!');
       setName('');
       setPhone('');
-      // You might want to trigger a refresh of the AgentsList here
     } catch (error) {
       setMessage(error instanceof Error ? error.message : 'An error occurred');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -60,9 +62,10 @@ export function AddAgentForm({ userId }: Props) {
       </div>
       <button
         type="submit"
-        className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+        disabled={loading}
+        className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
       >
-        Add Agent
+        {loading ? 'Adding Agent...' : 'Add Agent'}
       </button>
       {message && <p className="text-sm text-center text-gray-600 dark:text-gray-400">{message}</p>}
     </form>

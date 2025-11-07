@@ -1,15 +1,23 @@
 // components/dashboard/TopSoldLastYear.tsx
 'use client';
 import { useState, useEffect } from 'react';
-import { TopSoldProduct } from '@/types/index';
+import { api, getUserId } from '@/lib/api';
 // We can use Recharts, which is in your package.json
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 
-interface Props {
-  userId: string;
+interface TopSoldProduct {
+  product_name: string;
+  country: string;
+  totalSales: number;
+  avgPrice: number;
+  avgStock: number;
 }
-const BACK_END_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
-export function TopSoldLastYear({ userId }: Props) {
+
+interface Props {
+  userId?: string;
+}
+
+export function TopSoldLastYear({ userId: propUserId }: Props) {
   const [products, setProducts] = useState<TopSoldProduct[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -18,53 +26,117 @@ export function TopSoldLastYear({ userId }: Props) {
     const fetchTopSold = async () => {
       try {
         setLoading(true);
-        // Mock data, as /top-sold/:userId isn't in the backend package.json
-        // Replace with actual fetch when ready
-        const res = await fetch(`${BACK_END_URL}/top-sold/${userId}`);
-        if (!res.ok) throw new Error('Failed to fetch top sold');
-        const data: TopSoldProduct[] = await res.json();
+        setError(null);
         
-        // --- Mock Data Start ---
-        await new Promise(res => setTimeout(res, 700)); // Simulate network delay
-        // const data: TopSoldProduct[] = [
-        //   { _id: 'p1', productName: 'Product A', unitsSold: 1200, revenue: 24000 },
-        //   { _id: 'p2', productName: 'Product B', unitsSold: 950, revenue: 19000 },
-        //   { _id: 'p3', productName: 'Product C', unitsSold: 800, revenue: 15000 },
-        //   { _id: 'p4', productName: 'Product D', unitsSold: 600, revenue: 22000 },
-        //   { _id: 'p5', productName: 'Product E', unitsSold: 450, revenue: 9000 },
-        // ];
-        // --- Mock Data End ---
+        // Get userId from props or localStorage
+        const userId = propUserId || getUserId();
+        if (!userId) {
+          throw new Error('No user ID available');
+        }
+
+        console.log('📈 Fetching top sold products for user:', userId);
+        const response = await api.getTopSold(userId, 5);
+        const data = await response.json();
         
-        setProducts(data);
+        // Handle the backend response structure
+        const productsList = data.topSold || data || [];
+        console.log('📈 Top sold products received:', productsList);
+        setProducts(productsList);
+        
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'An unknown error occurred');
+        console.error('❌ Error fetching top sold products:', err);
+        setError(err instanceof Error ? err.message : 'Failed to fetch top sold');
       } finally {
         setLoading(false);
       }
     };
     
     fetchTopSold();
-  }, [userId]);
+  }, [propUserId]);
   
-  if (loading) return <div className="p-4 text-center text-gray-500 dark:text-gray-400">Loading Top Sold...</div>;
-  if (error) return <div className="p-4 text-center text-red-500">Error: {error}</div>;
+  if (loading) {
+    return (
+      <div className="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md h-96">
+        <div className="flex items-center justify-center h-full">
+          <div className="flex items-center space-x-2">
+            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+            <span className="text-gray-500 dark:text-gray-400">Loading Top Sold...</span>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md h-96">
+        <div className="flex items-center justify-center h-full">
+          <div className="text-center">
+            <div className="text-red-500 mb-2">Error: Failed to fetch top sold</div>
+            <button 
+              onClick={() => window.location.reload()} 
+              className="text-blue-600 hover:text-blue-500 text-sm underline"
+            >
+              Retry
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (products.length === 0) {
+    return (
+      <div className="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md h-96">
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Top Sold (Last Year)</h3>
+        <div className="flex items-center justify-center h-64">
+          <div className="text-center text-gray-500 dark:text-gray-400">
+            <div className="text-4xl mb-2">📊</div>
+            <div>No sales data available</div>
+            <div className="text-xs mt-1">Add inventory items to see top sellers</div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md h-96">
-      <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Top Sold (Last Year)</h3>
-      <ResponsiveContainer width="100%" height="100%">
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Top Sold (Last Year)</h3>
+        <span className="text-sm text-gray-500 dark:text-gray-400">
+          {products.length} products
+        </span>
+      </div>
+      <ResponsiveContainer width="100%" height="85%">
         <BarChart data={products} layout="vertical" margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
           <XAxis type="number" hide />
           <YAxis 
-            dataKey="productName" 
+            dataKey="product_name" 
             type="category" 
             width={80} 
             tickLine={false} 
             axisLine={false}
-            stroke="hsl(var(--muted-foreground))"
+            tick={{ fontSize: 12 }}
+            className="text-gray-600 dark:text-gray-300"
           />
-          <Tooltip cursor={{ fill: 'rgba(200, 200, 200, 0.2)' }} />
-          <Bar dataKey="unitsSold" fill="hsl(var(--primary))" radius={[0, 4, 4, 0]} />
+          <Tooltip 
+            cursor={{ fill: 'rgba(200, 200, 200, 0.2)' }}
+            contentStyle={{
+              backgroundColor: 'rgba(0, 0, 0, 0.8)',
+              border: 'none',
+              borderRadius: '8px',
+              color: 'white'
+            }}
+            formatter={(value, name) => [`${value} units`, 'Sales']}
+            labelFormatter={(label) => `Product: ${label}`}
+          />
+          <Bar 
+            dataKey="totalSales" 
+            fill="#3B82F6" 
+            radius={[0, 4, 4, 0]}
+            className="hover:opacity-80"
+          />
         </BarChart>
       </ResponsiveContainer>
     </div>

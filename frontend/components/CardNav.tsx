@@ -10,10 +10,11 @@ import { GoArrowUpRight } from "react-icons/go";
 import { useRouter } from "next/navigation";
 import { FaUser } from "react-icons/fa";
 
-// --- IMPORT NEW COMPONENTS ---
+// --- IMPORT CHILD COMPONENTS ---
 import LanguageSwitcher from "./LanguageSwitcher"; // Adjust path if needed
-import LocationSwitcher from "./LocationSwitcher";
+import LocationSwitcher from "./LocationSwitcher"; // Adjust path if needed
 
+// --- TYPE DEFINITIONS ---
 type CardNavLink = {
   label: string;
   href: string;
@@ -39,8 +40,7 @@ export interface CardNavProps {
   buttonTextColor?: string;
 }
 
-// --- Location data has been REMOVED from here ---
-
+// --- COMPONENT START ---
 const CardNav: React.FC<CardNavProps> = ({
   logo,
   logoAlt = "Logo",
@@ -52,26 +52,24 @@ const CardNav: React.FC<CardNavProps> = ({
   buttonBgColor,
   buttonTextColor,
 }) => {
+  // --- HAMBURGER STATE ---
   const [isHamburgerOpen, setIsHamburgerOpen] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
 
-  // Central state for dropdowns
+  // --- DROPDOWN STATE ---
   const [activeDropdown, setActiveDropdown] = useState<
     "location" | "language" | null
   >(null);
 
-  // --- selectedLocation state has been REMOVED from here ---
-
+  // --- REFS ---
   const navRef = useRef<HTMLDivElement | null>(null);
   const cardsRef = useRef<HTMLDivElement[]>([]);
   const tlRef = useRef<gsap.core.Timeline | null>(null);
   const router = useRouter();
-
-  // Refs for dropdown buttons
   const locationRef = useRef<HTMLDivElement | null>(null);
   const languageRef = useRef<HTMLDivElement | null>(null);
 
-  // Handlers to toggle dropdowns
+  // --- DROPDOWN HANDLERS ---
   const toggleLocation = () => {
     setActiveDropdown(activeDropdown === "location" ? null : "location");
   };
@@ -100,6 +98,7 @@ const CardNav: React.FC<CardNavProps> = ({
     };
   }, [activeDropdown]);
 
+  // --- HAMBURGER ANIMATION LOGIC ---
   const calculateHeight = () => {
     const navEl = navRef.current;
     if (!navEl) return 64;
@@ -194,6 +193,7 @@ const CardNav: React.FC<CardNavProps> = ({
     return () => window.removeEventListener("resize", handleResize);
   }, [isExpanded]);
 
+  // --- HAMBURGER TOGGLE FUNCTION ---
   const toggleMenu = () => {
     const tl = tlRef.current;
     if (!tl) return;
@@ -216,7 +216,7 @@ const CardNav: React.FC<CardNavProps> = ({
     <div
       className={`card-nav-container relative left-1/2 -translate-x-1/2 w-[90%] max-w-[850px] z-[99] top-[1.2em] md:top-[2em] ${className}`}
     >
-      {/* --- Location Div (NOW A COMPONENT) --- */}
+      {/* --- Location Component --- */}
       <div
         className="absolute right-full top-1/2 -translate-y-1/2 mr-8"
         ref={locationRef}
@@ -235,6 +235,8 @@ const CardNav: React.FC<CardNavProps> = ({
         style={{ backgroundColor: baseColor }}
       >
         <div className="card-nav-top absolute inset-x-0 top-0 h-[64px] flex items-center justify-between p-2 pl-[1.1rem] z-[2]">
+          
+          {/* --- HAMBURGER JSX --- */}
           <div
             className={`hamburger-menu ${
               isHamburgerOpen ? "open" : ""
@@ -259,10 +261,12 @@ const CardNav: React.FC<CardNavProps> = ({
             />
           </div>
 
+          {/* --- LOGO --- */}
           <div className="logo-container flex items-center md:absolute md:left-1/2 md:top-1/2 md:-translate-x-1/2 md:-translate-y-1/2 order-1 md:order-none">
             <img src={logo} alt={logoAlt} className="logo h-[32px]" />
           </div>
 
+          {/* --- CTA BUTTON --- */}
           <button
             type="button"
             className="card-nav-cta-button hidden md:inline-flex border-0 rounded-[calc(0.75rem-0.2rem)] px-4 items-center h-full font-medium cursor-pointer transition-colors duration-300"
@@ -273,6 +277,7 @@ const CardNav: React.FC<CardNavProps> = ({
           </button>
         </div>
 
+        {/* --- EXPANDABLE CONTENT (CARDS) --- */}
         <div
           className={`card-nav-content absolute left-0 right-0 top-[64px] bottom-0 p-2 flex flex-col items-stretch gap-2 justify-start z-[1] ${
             isExpanded
@@ -281,6 +286,7 @@ const CardNav: React.FC<CardNavProps> = ({
           } md:flex-row md:items-stretch md:gap-[12px]`}
           aria-hidden={!isExpanded}
         >
+          {/* This maps the 'items' prop to create the cards */}
           {(items || []).slice(0, 3).map((item, idx) => (
             <div
               key={`${item.label}-${idx}`}

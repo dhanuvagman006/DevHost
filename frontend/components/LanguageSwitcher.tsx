@@ -29,13 +29,13 @@ const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({
     <div className="relative">
       {/* Visible Button */}
       <div
-        className="hidden md:flex items-center justify-center w-11 h-11 bg-white text-gray-900 rounded-full cursor-pointer shadow-md transition-all duration-300 ease-in-out hover:bg-gray-100 hover:scale-110" // --- CHANGED ---
+        className="hidden md:flex items-center justify-center w-11 h-11 bg-white text-gray-900 rounded-full cursor-pointer shadow-md transition-all duration-300 ease-in-out hover:bg-gray-100 hover:scale-110"
         onClick={onToggle}
       >
         {selectedLanguage ? (
           <span className="text-xl">{selectedLanguage.flag}</span>
         ) : (
-          <IoLanguage size={22} /> // --- CHANGED ---
+          <IoLanguage size={22} />
         )}
       </div>
 
@@ -52,7 +52,7 @@ const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({
               }}
             >
               <span className="text-xl">{lang.flag}</span>
-              <span className="text-base font-medium">{lang.name}</span> {/* --- CHANGED --- */}
+              <span className="text-base font-medium">{lang.name}</span>
             </div>
           ))}
           {/* Reset button */}
@@ -64,7 +64,7 @@ const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({
                 onToggle();
               }}
             >
-              <IoLanguage size={22} /> {/* --- CHANGED --- */}
+              <IoLanguage size={22} />
             </div>
           )}
         </div>

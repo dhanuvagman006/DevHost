@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useState, useMemo } from 'react';
-
+import { ProtectedRoute } from '@/components/ProtectedRoute';
 // --- TYPE DEFINITIONS ---
 
 type Product = {
@@ -150,6 +150,7 @@ export default function App() {
 
   return (
     <>
+    <ProtectedRoute>
       <div className="w-full h-screen bg-[#000000] text-[#A2B4C6] font-sans overflow-hidden grid grid-cols-1 lg:grid-cols-3">
         
         {/* === Product Grid (Left Column) === */}
@@ -229,6 +230,7 @@ export default function App() {
         total={total}
         onClose={handleCloseModal}
       />
+      </ProtectedRoute>
     </>
   );
 }

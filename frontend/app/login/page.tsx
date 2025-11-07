@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { signInWithPopup } from "firebase/auth";
-import { auth, googleProvider } from "@/lib/firebase"; // Make sure googleProvider is exported from your firebase config
+import { signInWithPopup, getAdditionalUserInfo } from "firebase/auth"; // Import getAdditionalUserInfo
+import { auth, googleProvider } from "@/lib/firebase"; // Make sure googleProvider is exported
 
 export default function LoginPage() {
   const [error, setError] = useState<string | null>(null);
@@ -13,9 +13,20 @@ export default function LoginPage() {
   const handleGoogleSignIn = async () => {
     setError(null);
     try {
-      await signInWithPopup(auth, googleProvider);
-      // On success, redirect
-      router.push("/dashboard");
+      // Sign in with Google
+      const result = await signInWithPopup(auth, googleProvider);
+      
+      // Get additional user info to check if they are new
+      const additionalInfo = getAdditionalUserInfo(result);
+
+      if (additionalInfo?.isNewUser) {
+        // Redirect new users to the onboarding page
+        router.push("/onboarding");
+      } else {
+        // Redirect existing users to the dashboard
+        router.push("/dashboard");
+      }
+
     } catch (err: any) {
       if (err.code === "auth/popup-closed-by-user") {
         setError("Sign-in cancelled.");

@@ -1,11 +1,31 @@
+// app/dashboard/page.tsx
+
+'use client';
+
 // Make sure to import the refactored components
 // Adjust the path as needed
 import MagicBento, { MagicBentoCard } from '@/components/MagicBento';
 
 //import { Navbar } from '@/components/layout/Navbar';
 import { ChartCard } from '@/components/ui/ChartCard';
-import  WeatherWidget  from '@/components/widgets/WeatherWidget';
+import WeatherWidget from '@/components/widgets/WeatherWidget';
 import { InventoryAlerts } from '@/components/widgets/InventoryAlerts';
+import CardNav from '@/components/CardNav';
+
+// --- NEWLY IMPORTED COMPONENTS ---
+import { AddItemForm } from '@/components/dashboard/AddItemForm';
+import { InventoryTable } from '@/components/dashboard/InventoryTable';
+import { AddAgentForm } from '@/components/dashboard/AddAgentForm';
+import { AgentsList } from '@/components/dashboard/AgentsList';
+import { BillingForm } from '@/components/dashboard/BillingForm';
+import { DynamicPricingForm } from '@/components/dashboard/DynamicPricingForm';
+import { ForecastForm } from '@/components/dashboard/ForecastForm';
+import { AnalyticsTable } from '@/components/dashboard/AnalyticsTable';
+import { TopSoldLastYear } from '@/components/dashboard/TopSoldLastYear';
+import { RegionalTopTable } from '@/components/dashboard/RegionalTopTable';
+import { ReplenishmentChecker } from '@/components/dashboard/ReplenishmentChecker';
+// --- END NEW IMPORTS ---
+
 
 // --- Mock Data ---
 const salesForecastData = [
@@ -26,8 +46,46 @@ const pricingSuggestionData = [
   { name: 'Milk', total: 4.29 },
 ];
 // --- End Mock Data ---
+const items = [
+    {
+      label: "About",
+      bgColor: "#0D0716",
+      textColor: "#fff",
+      links: [
+        { label: "Company", ariaLabel: "About Company", href: "/about/company" },
+        { label: "Careers", ariaLabel: "About Careers", href: "/about/careers" }
+      ]
+    },
+    {
+      label: "Projects", 
+      bgColor: "#170D27",
+      textColor: "#fff",
+      links: [
+        { label: "Featured", ariaLabel: "Featured Projects" ,href: "/landing"},
+        { label: "Case Studies", ariaLabel: "Project Case Studies", href: "/projects/case-studies" }
+      ]
+    },
+    {
+      label: "Contact",
+      bgColor: "#271E37", 
+      textColor: "#fff",
+      links: [
+        { label: "Email", ariaLabel: "Email us", href: "/contact/email" },
+        { label: "Twitter", ariaLabel: "Twitter", href: "/contact/twitter" },
+        { label: "LinkedIn", ariaLabel: "LinkedIn", href: "/contact/linkedin" }
+      ]
+    }
+  ];
+
 
 export default function DashboardPage() {
+  // --- Mock User Data (for component props) ---
+  // You would replace this with actual session data
+  const userId = "user_abc_123";
+  const userCountry = "Norway"; // Using this based on your hackathon project
+  // --- End Mock User Data ---
+
+
   // Define the style for the bento cards
   // This is pulled from your original MagicBento.tsx
   const bentoCardStyle = {
@@ -61,6 +119,16 @@ export default function DashboardPage() {
   return (
     // The RootLayout already provides the Sidebar, so we just build the main content area
     <div className="flex flex-col h-screen" >
+      <CardNav
+      logo="/logo.svg"
+      logoAlt="Company Logo"
+      items={items}
+      baseColor="#fff"
+      menuColor="#000"
+      buttonBgColor="#111"
+      buttonTextColor="#fff"
+      ease="power3.out"
+    />
       {/* <Navbar /> */}
 
       {/* MODIFIED: Added dark background for glow effects */}
@@ -77,9 +145,11 @@ export default function DashboardPage() {
            * This layout is preserved from your original page.
            */}
           <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+            
             {/* Main content area (charts) */}
             <div className="xl:col-span-2 flex flex-col gap-6">
-              {/* Grid for the two charts */}
+              
+              {/* Grid for the top two charts */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 
                 {/* MODIFIED: Wrap ChartCard in MagicBentoCard */}
@@ -98,8 +168,32 @@ export default function DashboardPage() {
                     dataKey="total"
                   />
                 </MagicBentoCard>
+
+                {/* --- NEW MAIN CONTENT COMPONENTS START HERE --- */}
+
+                {/* Analytics Table (Spans full width of this column) */}
+                <MagicBentoCard {...bentoCardProps} className={`${bentoCardClassName} md:col-span-2`}>
+                  <AnalyticsTable userId={userId} />
+                </MagicBentoCard>
+                
+                {/* Inventory Table (Spans full width of this column) */}
+                <MagicBentoCard {...bentoCardProps} className={`${bentoCardClassName} md:col-span-2`}>
+                  <InventoryTable userId={userId} />
+                </MagicBentoCard>
+
+                {/* Top Sold Last Year */}
+                <MagicBentoCard {...bentoCardProps}>
+                  <TopSoldLastYear userId={userId} />
+                </MagicBentoCard>
+                
+                {/* Regional Top Sellers */}
+                <MagicBentoCard {...bentoCardProps}>
+                  <RegionalTopTable country={userCountry} />
+                </MagicBentoCard>
+
+                {/* --- NEW MAIN CONTENT COMPONENTS END HERE --- */}
+
               </div>
-              {/* You could add more charts or tables here, wrapped in <MagicBentoCard> */}
             </div>
 
             {/* Right sidebar area (weather & alerts) */}
@@ -114,6 +208,38 @@ export default function DashboardPage() {
               <MagicBentoCard {...bentoCardProps}>
                 <InventoryAlerts />
               </MagicBentoCard>
+
+              {/* --- NEW SIDEBAR COMPONENTS START HERE --- */}
+              
+              <MagicBentoCard {...bentoCardProps}>
+                <AddItemForm userId={userId} />
+              </MagicBentoCard>
+              
+              {/* <MagicBentoCard {...bentoCardProps}>
+                {/* //<BillingForm userId={userId} /> 
+              </MagicBentoCard> */}
+              
+              {/* <MagicBentoCard {...bentoCardProps}>
+                <AgentsList userId={userId} />
+              </MagicBentoCard> */}
+
+              <MagicBentoCard {...bentoCardProps}>
+                <AddAgentForm userId={userId} />
+              </MagicBentoCard>
+
+              <MagicBentoCard {...bentoCardProps}>
+                <ReplenishmentChecker userId={userId} />
+              </MagicBentoCard>
+
+              <MagicBentoCard {...bentoCardProps}>
+                <DynamicPricingForm userId={userId} />
+              </MagicBentoCard>
+
+              <MagicBentoCard {...bentoCardProps}>
+                <ForecastForm />
+              </MagicBentoCard>
+
+              {/* --- NEW SIDEBAR COMPONENTS END HERE --- */}
 
             </div>
           </div>

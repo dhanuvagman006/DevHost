@@ -1,9 +1,9 @@
-http://localhost:5000/create-db post 
+http://localhost:5000/create-db post //To create New user
 {"username":"dhanush1"}
 
 response :{"message":"Database 'dhanush1' created","userId":"690cd2efa57bdc6fab6fb01a"}
 
-http://localhost:5000/add-item/690cd373a57bdc6fab6fb01b post request
+http://localhost:5000/add-item/690cd373a57bdc6fab6fb01b post request  //To add new Item
 {
   "itemName": "Toothpaste",
   "quantity": 20,
@@ -15,7 +15,7 @@ response :{
     "itemId": "690cd3bba57bdc6fab6fb01c"
 }
 
-http://localhost:5000/getItems/690cd373a57bdc6fab6fb01b
+http://localhost:5000/getItems/690cd373a57bdc6fab6fb01b get //To list all items
 
 response:
 {"items":[

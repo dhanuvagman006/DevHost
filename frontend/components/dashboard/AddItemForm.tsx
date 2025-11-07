@@ -201,7 +201,7 @@ export function AddItemForm({ userId: propUserId, onItemAdded }: Props) {
       <div className="grid grid-cols-3 gap-4">
         <div>
           <label htmlFor="costPrice" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-            Cost Price ($)
+            Cost Price (€)
           </label>
           <input
             type="number"
@@ -216,7 +216,7 @@ export function AddItemForm({ userId: propUserId, onItemAdded }: Props) {
         </div>
         <div>
           <label htmlFor="sellingPrice" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-            Selling Price ($)
+            Selling Price (€)
           </label>
           <input
             type="number"
@@ -231,7 +231,7 @@ export function AddItemForm({ userId: propUserId, onItemAdded }: Props) {
         </div>
         <div>
           <label htmlFor="currentPrice" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-            Current Price ($)
+            Current Price (€)
           </label>
           <input
             type="number"

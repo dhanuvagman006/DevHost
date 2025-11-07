@@ -161,21 +161,21 @@ export default function DashboardPage() {
               {/* Grid for the top two charts */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* MODIFIED: Replaced MagicBentoCard with <div> */}
-                <div className={bentoCardClasses}>
+                {/* <div className={bentoCardClasses}>
                   <ChartCard
                     title="Weekly Sales Forecast"
                     data={salesForecastData}
                   />
                 </div>
 
-                {/* MODIFIED: Replaced MagicBentoCard with <div> */}
+                {/* MODIFIED: Replaced MagicBentoCard with <div> 
                 <div className={bentoCardClasses}>
                   <ChartCard
                     title="AI Price Suggestions"
                     data={pricingSuggestionData}
                     dataKey="total"
                   />
-                </div>
+                </div> */}
 
                 {/* --- NEW MAIN CONTENT COMPONENTS START HERE --- */}
 
@@ -235,9 +235,9 @@ export default function DashboardPage() {
                 {userId ? <AddAgentForm userId={userId} /> : <div className="p-6 text-center text-gray-500">Loading user data...</div>}
               </div>
 
-              <div className={bentoCardClasses}>
+              {/* <div className={bentoCardClasses}>
                 {userId ? <ReplenishmentChecker userId={userId} /> : <div className="p-6 text-center text-gray-500">Loading user data...</div>}
-              </div>
+              </div> */}
 
               <div className={bentoCardClasses}>
                 {userId ? <DynamicPricingForm userId={userId} /> : <div className="p-6 text-center text-gray-500">Loading user data...</div>}

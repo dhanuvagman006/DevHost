@@ -24,7 +24,7 @@ export function DynamicPricingForm({ userId }: Props) {
       const result = await response.json();
       
       setNewPrice(result.optimizedPrice);
-      setMessage(`Optimized price for ${productId} is $${result.optimizedPrice}`);
+      setMessage(`Optimized price for ${productId} is €${result.optimizedPrice}`);
       setProductId(''); // Clear input on success
     } catch (error) {
       setMessage(error instanceof Error ? error.message : 'An error occurred');

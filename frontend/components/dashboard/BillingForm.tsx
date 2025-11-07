@@ -40,7 +40,7 @@ export function BillingForm({ userId }: Props) {
       const response = await api.createBill(userId, { items: validItems });
       const result = await response.json();
       
-      setMessage(`Billing successful! Total: $${result.totalPrice}. Invoice ID: ${result.invoiceId}`);
+      setMessage(`Billing successful! Total: €${result.totalPrice}. Invoice ID: ${result.invoiceId}`);
       setCart([{ productId: '', quantity: 1 }]);
     } catch (error) {
       setMessage(error instanceof Error ? error.message : 'An error occurred');

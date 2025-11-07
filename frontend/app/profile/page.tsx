@@ -37,7 +37,7 @@ export default function ProfilePage() {
   return (
     // 1. Page Container
     <div className="flex min-h-screen items-center justify-center bg-bg-night p-4">
-      <CardNav />
+      {/* <CardNav /> */}
       {/* 2. Improved Profile Card */}
       <div 
         className="w-full max-w-md rounded-xl border border-border 

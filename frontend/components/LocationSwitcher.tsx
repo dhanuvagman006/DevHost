@@ -1,23 +1,24 @@
 "use client";
 import React from "react";
 import { IoLocationOutline } from "react-icons/io5";
+import Flag from "react-world-flags"; // --- 1. Import the Flag component ---
 
-// --- LOCATION DATA ---
+// --- LOCATION DATA (isoCode is used by react-world-flags) ---
 const nordicLocations = [
-  { name: "Sweden", flag: "🇸🇪" },
-  { name: "Finland", flag: "🇫🇮" },
-  { name: "Norway", flag: "🇳🇴" },
-  { name: "Denmark", flag: "🇩🇰" },
-  { name: "Iceland", flag: "🇮🇸" },
+  { name: "Sweden", isoCode: "se" },
+  { name: "Finland", isoCode: "fi" },
+  { name: "Norway", isoCode: "no" },
+  { name: "Denmark", isoCode: "dk" },
+  { name: "Iceland", isoCode: "is" },
 ];
 
-// --- TYPE FOR LOCATION ---
+// --- TYPE FOR LOCATION (unchanged) ---
 type Location = {
   name: string;
-  flag: string;
+  isoCode: string;
 } | null;
 
-// --- PROPS ---
+// --- PROPS (unchanged) ---
 interface LocationSwitcherProps {
   isOpen: boolean;
   onToggle: () => void;
@@ -39,9 +40,14 @@ const LocationSwitcher: React.FC<LocationSwitcherProps> = ({
         onClick={onToggle}
       >
         {selectedLocation ? (
-          <span className="text-xl -ml-1">{selectedLocation.flag}</span>
+          // --- 2. Use the Flag component ---
+          <Flag
+            code={selectedLocation.isoCode}
+            width="20" // Set width
+            className="rounded-sm"
+          />
         ) : (
-          <IoLocationOutline size={22} />
+          <IoLocationOutline size={20} />
         )}
         <span className="text-base font-medium">
           {selectedLocation ? selectedLocation.name : "Location"}
@@ -54,26 +60,31 @@ const LocationSwitcher: React.FC<LocationSwitcherProps> = ({
           {nordicLocations.map((loc) => (
             <div
               key={loc.name}
-              className="flex items-center gap-2 px-4 py-2 cursor-pointer hover:bg-gray-100 whitespace-nowrap text-black"
+              className="flex items-center gap-3 px-4 py-2 cursor-pointer hover:bg-gray-100 whitespace-nowrap text-black"
               onClick={() => {
                 onLocationChange(loc);
-                // onToggle(); // Removed: Parent now controls closing
+                // onToggle(); // Parent controls closing
               }}
             >
-              <span className="text-xl">{loc.flag}</span>
-              <span className="text-base font-medium">{loc.name}</span>
+              {/* --- 3. Use the Flag component in the loop --- */}
+              <Flag
+                code={loc.isoCode}
+                width="20" // Set width
+                className="rounded-sm"
+              />
+              <span className="text-base font-medium p-2">{loc.name}</span>
             </div>
           ))}
           {/* Reset button */}
           {selectedLocation && (
             <div
-              className="flex items-center gap-2 px-4 py-2 cursor-pointer hover:bg-gray-100 border-t text-black"
+              className="flex items-center gap-3 px-4 py-2 cursor-pointer hover:bg-gray-100 border-t text-black"
               onClick={() => {
                 onLocationChange(null);
-                // onToggle(); // Removed: Parent now controls closing
+                // onToggle(); // Parent controls closing
               }}
             >
-              <IoLocationOutline size={22} />
+              <IoLocationOutline size={20} />
               <span className="text-base font-medium">Location</span>
             </div>
           )}

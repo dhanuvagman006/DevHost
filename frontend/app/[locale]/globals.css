@@ -121,10 +121,14 @@
   }
 }
 
-:root {
-  --radius: 0.625rem;
 
-  /* === Light Mode (White Theme) === */
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+
+
+/* === Light Mode (White Theme) === */
   --background: oklch(1 0 0);               /* Pure white background */
   --foreground: oklch(0.145 0 0);           /* Deep neutral text */
   

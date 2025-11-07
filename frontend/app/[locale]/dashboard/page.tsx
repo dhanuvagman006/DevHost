@@ -28,6 +28,7 @@ import { RegionalTopTable } from '@/components/dashboard/RegionalTopTable';
 import { ReplenishmentChecker } from '@/components/dashboard/ReplenishmentChecker';
 // --- END NEW IMPORTS ---
 
+  const t = useTranslations('dashboard'); // <-- 2. INITIALIZE HOOK
 // --- Mock Data (unchanged) ---
 const salesForecastData = [
   { name: 'Mon', total: 4000 },
@@ -50,9 +51,12 @@ const pricingSuggestionData = [
 
 // --- REMOVED: `items` array is now defined INSIDE the component ---
 
-export default function DashboardPage() {
+export default async function DashboardPage({
+  params
+}: {
+  params: { locale: string };
+}) {
   const t = useTranslations('dashboard'); // <-- 2. INITIALIZE HOOK
-
   // --- 3. MOVED `items` array inside component to access `t` ---
   const items = [
     {

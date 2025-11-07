@@ -1,40 +1,32 @@
+// app/[locale]/layout.tsx
+
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/context/AuthContext";
 import CardNav from "@/components/CardNav";
 import MapSelector from "@/components/ui/MapSelector";
-
-// Imports for i18n
 import { NextIntlClientProvider } from 'next-intl';
 import { getMessages, getTranslations } from 'next-intl/server';
 
 const inter = Inter({ subsets: ["latin"] });
 
-// Your metadata (Next.js will handle this)
 export const metadata: Metadata = {
   title: "FolkSpace - Your All-in-One Deployment Platform",
   description: "FolkSpace is your all-in-one platform for deploying, managing, and scaling your applications seamlessly.",
 };
 
-
-
-
 export default async function LocaleLayout({
   children,
-  params: { locale },
+  params: { locale }
 }: {
   children: React.ReactNode;
   params: { locale: string };
 }) {
-  // --- 1. Load messages for the provider ---
-  const messages = await getMessages();
-
-  // --- 2. Load translations for static content ---
+  const messages = await getMessages({ locale });
   const t = await getTranslations('Navigation');
 
-  // --- 3. Build your `items` array dynamically ---
-  // This lets you translate your navigation
+  // Build items array dynamically
   const items = [
     {
       label: t('about'),
@@ -67,16 +59,13 @@ export default async function LocaleLayout({
   ];
 
   return (
-    <html lang={locale}> {/* Use the dynamic locale here */}
+    <html lang={locale}>
       <body className={inter.className}>
-        {/* The provider wraps everything */}
-        <NextIntlClientProvider messages={messages}>
+        <NextIntlClientProvider messages={messages} locale={locale}>
           <AuthProvider>
-            {/* <CardNav items={items} /> Pass the translated items */}
-            {/* <MapSelector />  <-- You can place this wherever it needs to go */}
-            
+            {/* <CardNav items={items} /> */}
+            {/* <MapSelector /> */}
             {children}
-            
           </AuthProvider>
         </NextIntlClientProvider>
       </body>

@@ -3,20 +3,26 @@
     "nav": {
       "logoAlt": "Company Logo",
       "about": "About",
-      "aboutCompany": "About Company",
-      "company": "Company",
-      "careers": "Careers",
-      "aboutCareers": "About Careers",
       "projects": "Projects",
-      "featured": "Featured",
-      "featuredProjects": "Featured Projects",
-      "caseStudies": "Case Studies",
-      "projectCaseStudies": "Project Case Studies",
       "contact": "Contact",
-      "email": "Email",
-      "emailUs": "Email us",
-      "twitter": "Twitter",
-      "linkedIn": "LinkedIn"
+      "links": {
+        "company": "Company",
+        "careers": "Careers",
+        "featured": "Featured",
+        "caseStudies": "Case Studies",
+        "email": "Email",
+        "twitter": "Twitter",
+        "linkedin": "LinkedIn"
+      },
+      "aria": {
+        "company": "About our company",
+        "careers": "Career opportunities",
+        "featured": "Featured projects",
+        "caseStudies": "Case studies",
+        "email": "Contact via email",
+        "twitter": "Contact via Twitter",
+        "linkedin": "Contact via LinkedIn"
+      }
     },
     "common": {
       "loading": "Loading user data..."

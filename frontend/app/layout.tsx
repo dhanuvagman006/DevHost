@@ -1,6 +1,6 @@
 // app/layout.tsx
 
-import './globals.css'; // Or wherever your global styles are
+import '@/app/[locale]/globals.css'; // Or wherever your global styles are
 
 export default function RootLayout({
   children,
@@ -12,8 +12,9 @@ export default function RootLayout({
   // NO 'locale' prop here
   return (
     <html>
-      <body>
+      <body> 
         {children}
+        
       </body>
     </html>
   );

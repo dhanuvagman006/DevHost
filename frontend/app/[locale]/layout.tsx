@@ -72,7 +72,7 @@ export default async function LocaleLayout({
         {/* The provider wraps everything */}
         <NextIntlClientProvider messages={messages}>
           <AuthProvider>
-            <CardNav items={items} /> {/* Pass the translated items */}
+            {/* <CardNav items={items} /> Pass the translated items */}
             {/* <MapSelector />  <-- You can place this wherever it needs to go */}
             
             {children}

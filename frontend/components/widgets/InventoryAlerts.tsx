@@ -10,7 +10,7 @@ const alerts = [
 export function InventoryAlerts() {
   return (
     <div className="p-4 bg-grey-900 rounded-lg shadow-sm">
-      <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+      <h3 className="text-lg font-semibold mb-4 flex items-center gap-2 text-teal-300">
         <Archive className="w-5 h-5" />
         Inventory Alerts
       </h3>

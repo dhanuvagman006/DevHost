@@ -14,6 +14,10 @@ require("dotenv").config();
 const nodemailer = require("nodemailer");
 const PORT = process.env.PORT || 5000;
 
+// Provide a fetch polyfill for Node versions < 18 and keep global fetch when available
+// Using dynamic import to stay compatible with CommonJS
+const fetch = global.fetch || ((...args) => import("node-fetch").then(({ default: f }) => f(...args)));
+
 
 const transporter = nodemailer.createTransport({
   host: process.env.EMAIL_HOST,
@@ -67,7 +71,7 @@ function random_forest(productCode, month, countryCode) {
 }
 
 if (!process.env.MONGO_URI) {
-  console.error("Missing MONGO_URI in .env");
+  console.error("Missing MONGO_URI in .env – please set MONGO_URI to start the server.");
   process.exit(1);
 }
 
@@ -96,6 +100,11 @@ async function connectCluster() {
 connectCluster();
 
 async function getUserAndDBByUserId(userId) {
+  // Validate ObjectId to avoid runtime exceptions on malformed ids
+  if (!ObjectId.isValid(userId)) {
+    return { user: null, userDB: null };
+  }
+
   const usersDB = client.db("UserDB");
   const user = await usersDB.collection("users").findOne({ _id: new ObjectId(userId) });
   if (!user) return { user: null, userDB: null };
@@ -311,7 +320,13 @@ app.post("/forecast", async (req, res) => {
       }),
     });
 
-    const data = await pythonResponse.json();
+    // Safely handle non-JSON / network issues
+    let data = {};
+    try {
+      data = await pythonResponse.json();
+    } catch (e) {
+      data = { success: false, error: "Invalid response from ML service" };
+    }
 
     if (!pythonResponse.ok || !data.success) {
       return res.status(500).json({
@@ -338,6 +353,51 @@ app.post("/forecast", async (req, res) => {
   }
 });
 
+// ===========================================
+// 🚨 GET OUT-OF-STOCK ITEMS (By UserId)
+// ===========================================
+app.get("/out-of-stock/:userId", async (req, res) => {
+  const { userId } = req.params;
+
+  try {
+    // Get user + their database
+    const { user, userDB } = await getUserAndDBByUserId(userId);
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    // Fetch items with zero or negative quantity
+    const outOfStockItems = await userDB
+      .collection("current_stock")
+      .find({ quantity: { $lte: 0 } })
+      .sort({ country: 1, product_name: 1 })
+      .toArray();
+
+    if (outOfStockItems.length === 0) {
+      return res.status(200).json({
+        success: true,
+        message: "All products are in stock. No empty items found.",
+        count: 0,
+        items: [],
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: `Found ${outOfStockItems.length} out-of-stock item(s).`,
+      count: outOfStockItems.length,
+      items: outOfStockItems.map((item) => ({
+        product_name: item.product_name,
+        country: item.country,
+        quantity: item.quantity,
+        last_updated: item.updatedAt || item.createdAt,
+      })),
+    });
+  } catch (err) {
+    console.error("Error fetching out-of-stock items:", err);
+    res.status(500).json({ error: "Failed to fetch out-of-stock items" });
+  }
+});
 
 app.post("/top-sold-city", async (req, res) => {
   const { city, top_sold } = req.body || {};
@@ -720,8 +780,13 @@ app.post("/dynamic-pricing/:userId", async (req, res) => {
       }),
     });
 
-    const forecastData = await pythonResponse.json();
-    const predictedDemand = forecastData.forecasted_sales || 300;
+    let forecastData = {};
+    try {
+      forecastData = await pythonResponse.json();
+    } catch (e) {
+      forecastData = { success: false };
+    }
+    const predictedDemand = (forecastData && forecastData.forecasted_sales) ? forecastData.forecasted_sales : 300;
 
     const ratio = currentStock / predictedDemand;
     let newPrice = basePrice;
@@ -761,6 +826,49 @@ app.post("/dynamic-pricing/:userId", async (req, res) => {
   } catch (err) {
     console.error("Error in /dynamic-pricing:", err);
     res.status(500).json({ error: "Failed to apply dynamic pricing" });
+  }
+});
+
+app.get("/low-stock/:userId", async (req, res) => {
+  const { userId } = req.params;
+  const threshold = Number(req.query.threshold) || 10; 
+
+  try {
+    const { user, userDB } = await getUserAndDBByUserId(userId);
+    if (!user)
+      return res.status(404).json({ error: "User not found or invalid ID" });
+
+    const lowStockItems = await userDB
+      .collection("current_stock")
+      .find({
+        quantity: { $gt: 0, $lte: threshold }, 
+      })
+      .sort({ quantity: 1 })
+      .toArray();
+
+    if (!lowStockItems.length) {
+      return res.status(200).json({
+        success: true,
+        message: `No low-stock items found (threshold ≤ ${threshold}).`,
+        count: 0,
+        items: [],
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: `Found ${lowStockItems.length} low-stock item(s) (≤ ${threshold}).`,
+      count: lowStockItems.length,
+      items: lowStockItems.map((item) => ({
+        product_name: item.product_name,
+        country: item.country,
+        quantity: item.quantity,
+        last_updated: item.updatedAt || item.createdAt,
+      })),
+    });
+  } catch (err) {
+    console.error("Error fetching low-stock items:", err);
+    res.status(500).json({ error: "Failed to fetch low-stock items" });
   }
 });
 
@@ -891,6 +999,128 @@ app.get("/regional-top/:country",async (req, res) => {
   } catch (err) {
     console.error("Error in /regional-top:", err);
     res.status(500).json({ error: "Failed to get regional top-sold products" });
+  }
+});
+
+// ==================================================
+// 🧾 PLACE RESTOCK ORDER (Auto Distributor Selection)
+// ==================================================
+app.post("/restock-order", async (req, res) => {
+  const { userId, city, order_items } = req.body || {};
+
+  if (!userId || !city || !Array.isArray(order_items) || order_items.length === 0) {
+    return res.status(400).json({
+      error: "Missing required fields: userId, city, and order_items[] (array of { product_name, quantity })",
+    });
+  }
+
+  try {
+    // Get retailer info
+    const { user } = await getUserAndDBByUserId(userId);
+    if (!user) return res.status(404).json({ error: "Retailer not found" });
+
+    // Find distributor(s) for that city
+    const globalDB = client.db("GlobalDB");
+    const distributorsCol = globalDB.collection("distributors");
+
+    const normalizedCity = city.trim().toLowerCase();
+    const distributors = await distributorsCol.find({ location: normalizedCity }).toArray();
+
+    if (!distributors.length) {
+      return res.status(404).json({
+        error: `No distributors found for city '${city}'. Please contact admin.`,
+      });
+    }
+
+    // Choose first distributor (you can randomize or round-robin later)
+    const distributor = distributors[0];
+
+    // Create order document
+    const ordersCol = globalDB.collection("orders");
+    const orderDoc = {
+      retailer_id: userId,
+      retailer_name: user.username,
+      retailer_email: user.email,
+      city: normalizedCity,
+      distributor: {
+        name: distributor.name,
+        contact: distributor.contact,
+        email: distributor.email,
+        address: distributor.address || "N/A",
+      },
+      order_items: order_items.map((item) => ({
+        product_name: item.product_name,
+        quantity: Number(item.quantity),
+      })),
+      status: "placed",
+      createdAt: new Date(),
+    };
+
+    const result = await ordersCol.insertOne(orderDoc);
+
+    // Prepare distributor email
+    const distributorSubject = `🧾 New Retail Order from ${user.username} (${city})`;
+    const distributorHTML = `
+      <div style="font-family:Arial,sans-serif;padding:15px;background:#f4f6f8;border-radius:10px">
+        <h2>New Order from Retailer: ${user.username}</h2>
+        <p><strong>City:</strong> ${city}</p>
+        <p><strong>Retailer Email:</strong> ${user.email || "N/A"}</p>
+        <h3>Order Items:</h3>
+        <table border="1" cellpadding="6" cellspacing="0" style="border-collapse:collapse;">
+          <tr><th>Product</th><th>Quantity</th></tr>
+          ${order_items
+            .map((item) => `<tr><td>${item.product_name}</td><td>${item.quantity}</td></tr>`)
+            .join("")}
+        </table>
+        <p><b>Order ID:</b> ${result.insertedId}</p>
+        <p>Please confirm and process this order at your earliest convenience.</p>
+        <hr/>
+        <small>Automated Notification • Nordic Retail System</small>
+      </div>
+    `;
+
+    // Send email to distributor
+    if (distributor.email) {
+      await sendEmailAlert(distributor.email, distributorSubject, distributorHTML);
+    } else {
+      console.warn(`[⚠️] Distributor ${distributor.name} has no email listed.`);
+    }
+
+    // Prepare retailer confirmation email
+    const retailerSubject = `✅ Restock Order Placed Successfully (${city})`;
+    const retailerHTML = `
+      <div style="font-family:Arial,sans-serif;padding:15px;background:#f4f6f8;border-radius:10px">
+        <h2>Your Restock Order Has Been Placed!</h2>
+        <p>Dear <b>${user.username}</b>,</p>
+        <p>Your order has been sent to <b>${distributor.name}</b> in <b>${city}</b>.</p>
+        <h3>Ordered Items:</h3>
+        <ul>
+          ${order_items.map((i) => `<li>${i.product_name} – ${i.quantity}</li>`).join("")}
+        </ul>
+        <p>We'll notify you when the distributor confirms.</p>
+        <hr/>
+        <small>Order ID: ${result.insertedId}</small><br/>
+        <small>Nordic Retail System</small>
+      </div>
+    `;
+
+    if (user.email) {
+      await sendEmailAlert(user.email, retailerSubject, retailerHTML);
+    }
+
+    res.status(201).json({
+      success: true,
+      message: "Order placed successfully and distributor notified.",
+      order_id: result.insertedId,
+      distributor: {
+        name: distributor.name,
+        contact: distributor.contact,
+        email: distributor.email,
+      },
+    });
+  } catch (err) {
+    console.error(" Error placing restock order:", err);
+    res.status(500).json({ error: "Failed to place restock order" });
   }
 });
 

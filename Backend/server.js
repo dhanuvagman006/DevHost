@@ -457,6 +457,212 @@ app.post("/bill/:userId", async (req, res) => {
   }
 });
 
+app.post("/dynamic-pricing/:userId", async (req, res) => {
+  const { userId } = req.params;
+  const { product_name, country } = req.body;
+
+  if (!product_name || !country)
+    return res.status(400).json({ error: "product_name and country are required" });
+
+  try {
+    const { user, userDB } = await getUserAndDBByUserId(userId);
+    if (!user) return res.status(404).json({ error: "User not found" });
+
+    const stockDoc = await userDB.collection("current_stock").findOne({ product_name, country });
+    if (!stockDoc) return res.status(404).json({ error: "Item not found in current stock" });
+
+    const currentStock = stockDoc.quantity || 0;
+    const basePrice = stockDoc.current_price || stockDoc.selling_price || 50;
+    const costPrice = stockDoc.cost_price || 30;
+
+    const pythonResponse = await fetch("http://localhost:8000/forecast", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        product_name,
+        country,
+        month: new Date().getMonth() + 1,
+        avg_price: basePrice,
+        previous_sales: stockDoc.sales || 300,
+        stock_level: currentStock,
+      }),
+    });
+
+    const forecastData = await pythonResponse.json();
+    const predictedDemand = forecastData.forecasted_sales || 300;
+
+    const ratio = currentStock / predictedDemand;
+    let newPrice = basePrice;
+    let reason = "";
+
+    if (ratio < 0.5) { newPrice *= 1.10; reason = "High demand / low stock"; }
+    else if (ratio < 0.8) { newPrice *= 1.05; reason = "Moderate demand"; }
+    else if (ratio > 1.5) { newPrice *= 0.90; reason = "Overstock"; }
+    else if (ratio > 1.2) { newPrice *= 0.95; reason = "Slight overstock"; }
+    else { reason = "Stable demand"; }
+
+    if (newPrice < costPrice * 1.1) {
+      newPrice = costPrice * 1.1;
+      reason += " | Adjusted to minimum profit margin.";
+    }
+
+    newPrice = Number(newPrice.toFixed(2));
+
+    await userDB.collection("current_stock").updateOne(
+      { product_name, country },
+      { $set: { current_price: newPrice, updatedAt: new Date() } }
+    );
+
+    res.json({
+      success: true,
+      product_name,
+      country,
+      old_price: basePrice,
+      new_price: newPrice,
+      predicted_demand: predictedDemand,
+      current_stock: currentStock,
+      stock_demand_ratio: Number(ratio.toFixed(2)),
+      reason,
+      note: "Dynamic pricing updated successfully."
+    });
+
+  } catch (err) {
+    console.error("Error in /dynamic-pricing:", err);
+    res.status(500).json({ error: "Failed to apply dynamic pricing" });
+  }
+});
+
+app.get("/top-sold/:userId", async (req, res) => {
+  const { userId } = req.params;
+  const limit = Number(req.query.limit) || 5;
+
+  try {
+    const { user, userDB } = await getUserAndDBByUserId(userId);
+    if (!user) return res.status(404).json({ error: "User not found" });
+
+    const now = new Date();
+    const currentMonth = now.getMonth() + 1;
+    const lastYear = now.getFullYear() - 1;
+
+    const topSold = await userDB.collection("inventory").aggregate([
+      {
+        $addFields: {
+          year: { $year: "$createdAt" },
+          month: { $toInt: "$month" },
+        },
+      },
+      {
+        $match: {
+          year: lastYear,
+          month: currentMonth,
+          sales: { $gt: 0 },
+        },
+      },
+      {
+        $group: {
+          _id: { product_name: "$product_name", country: "$country" },
+          totalSales: { $sum: "$sales" },
+          avgPrice: { $avg: "$selling_price" },
+          avgStock: { $avg: "$Quantity" },
+        },
+      },
+      { $sort: { totalSales: -1 } },
+      { $limit: limit },
+      {
+        $project: {
+          _id: 0,
+          product_name: "$_id.product_name",
+          country: "$_id.country",
+          totalSales: 1,
+          avgPrice: { $round: ["$avgPrice", 2] },
+          avgStock: { $round: ["$avgStock", 2] },
+        },
+      },
+    ]).toArray();
+
+    res.json({
+      success: true,
+      year: lastYear,
+      month: currentMonth,
+      count: topSold.length,
+      topSold,
+      note: `Top ${limit} sold products for ${lastYear}-${currentMonth}`,
+    });
+  } catch (err) {
+    console.error("Error in /top-sold:", err);
+    res.status(500).json({ error: "Failed to fetch top sold products" });
+  }
+});
+
+
+app.get("/regional-top/:country", async (req, res) => {
+  const { country } = req.params;
+  const limit = Number(req.query.limit) || 5;
+
+  if (!country) return res.status(400).json({ error: "country parameter is required" });
+
+  try {
+    const usersDB = client.db("UserDB");
+    const retailers = await usersDB.collection("users").find({ region: { $regex: new RegExp(country, "i") } }).toArray();
+
+    if (!retailers.length) {
+      return res.status(404).json({ error: `No retailers found in ${country}` });
+    }
+
+    const aggregated = {};
+
+    for (const retailer of retailers) {
+      const db = client.db(retailer.username);
+      const inventory = db.collection("inventory");
+
+      const results = await inventory.aggregate([
+        { $match: { country: { $regex: new RegExp(country, "i") }, sales: { $gt: 0 } } },
+        {
+          $group: {
+            _id: "$product_name",
+            totalSales: { $sum: "$sales" },
+            avgPrice: { $avg: "$selling_price" },
+            retailers: { $addToSet: retailer.username },
+          },
+        },
+      ]).toArray();
+
+      for (const r of results) {
+        if (!aggregated[r._id]) {
+          aggregated[r._id] = {
+            product_name: r._id,
+            totalSales: r.totalSales,
+            avgPrice: r.avgPrice,
+            retailers: r.retailers,
+          };
+        } else {
+          aggregated[r._id].totalSales += r.totalSales;
+          aggregated[r._id].avgPrice = (aggregated[r._id].avgPrice + r.avgPrice) / 2;
+          aggregated[r._id].retailers = Array.from(new Set([...aggregated[r._id].retailers, ...r.retailers]));
+        }
+      }
+    }
+
+    // Convert to sorted array
+    const topRegional = Object.values(aggregated)
+      .sort((a, b) => b.totalSales - a.totalSales)
+      .slice(0, limit);
+
+    res.json({
+      success: true,
+      region: country,
+      count: topRegional.length,
+      topRegional,
+      note: `Top ${limit} sold products in ${country} across nearby retailers.`,
+    });
+
+  } catch (err) {
+    console.error("Error in /regional-top:", err);
+    res.status(500).json({ error: "Failed to get regional top-sold products" });
+  }
+});
+
+
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });

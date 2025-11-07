@@ -34,16 +34,11 @@ export default function LandingPage() {
       <div className="relative z-10 text-center space-y-8">
         {/* Logo/Icon */}
         <div className="flex justify-center">
-          <div className="p-4 bg-gray-800 rounded-full">
-            {/* Using an emoji as a fallback for the icon */}
-            <span role="img" aria-label="rocket" className="text-6xl">
-              🚀
-            </span>
-          </div>
+          
         </div>
 
         {/* Branding & Tagline */}
-        <h1 className="text-5xl md:text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500">
+        <h1 className="text-6xl md:text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500">
           Welcome to FolkSpace
         </h1>
         <p className="text-lg md:text-xl text-gray-300 max-w-xl mx-auto">

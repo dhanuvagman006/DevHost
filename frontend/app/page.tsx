@@ -1,6 +1,6 @@
 "use client";
 import { ChartCard } from "@/components/ui/ChartCard";
-import {WeatherWidget} from "@/components/widgets/WeatherWidget";
+import WeatherWidget from "@/components/widgets/WeatherWidget";
 //import InventoryTable from "@/features/Inventory/InventoryTable";
 
 export default function Home() {

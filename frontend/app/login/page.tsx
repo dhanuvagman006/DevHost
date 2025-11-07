@@ -15,7 +15,7 @@ export default function LoginPage() {
     try {
       await signInWithPopup(auth, googleProvider);
       // On success, redirect
-      router.push("/profile");
+      router.push("/dashboard");
     } catch (err: any) {
       if (err.code === "auth/popup-closed-by-user") {
         setError("Sign-in cancelled.");

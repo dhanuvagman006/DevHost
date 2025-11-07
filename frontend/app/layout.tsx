@@ -3,17 +3,18 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/context/AuthContext"; // Adjust path if needed
 import CardNav from "@/components/CardNav";
+import MapSelector from "@/components/ui/MapSelector";
 const inter = Inter({ subsets: ["latin"] });
 
-import logo from '@/public/vercel.svg';
+//import logo from '@/public/logo2.png';
  const items = [
     {
       label: "About",
       bgColor: "#0D0716",
       textColor: "#fff",
       links: [
-        { label: "Company", ariaLabel: "About Company" },
-        { label: "Careers", ariaLabel: "About Careers" }
+        { label: "Company", ariaLabel: "About Company", href: "/about/company" },
+        { label: "Careers", ariaLabel: "About Careers", href: "/about/careers" }
       ]
     },
     {
@@ -22,7 +23,7 @@ import logo from '@/public/vercel.svg';
       textColor: "#fff",
       links: [
         { label: "Featured", ariaLabel: "Featured Projects" ,href: "/landing"},
-        { label: "Case Studies", ariaLabel: "Project Case Studies" }
+        { label: "Case Studies", ariaLabel: "Project Case Studies", href: "/projects/case-studies" }
       ]
     },
     {
@@ -30,9 +31,9 @@ import logo from '@/public/vercel.svg';
       bgColor: "#271E37", 
       textColor: "#fff",
       links: [
-        { label: "Email", ariaLabel: "Email us" },
-        { label: "Twitter", ariaLabel: "Twitter" },
-        { label: "LinkedIn", ariaLabel: "LinkedIn" }
+        { label: "Email", ariaLabel: "Email us", href: "/contact/email" },
+        { label: "Twitter", ariaLabel: "Twitter", href: "/contact/twitter" },
+        { label: "LinkedIn", ariaLabel: "LinkedIn", href: "/contact/linkedin" }
       ]
     }
   ];
@@ -54,7 +55,7 @@ export default function RootLayout({
     <html lang="en">
       <body className={inter.className}>
         <CardNav
-      logo={logo}
+      logo="/logo.svg"
       logoAlt="Company Logo"
       items={items}
       baseColor="#fff"
@@ -63,6 +64,7 @@ export default function RootLayout({
       buttonTextColor="#fff"
       ease="power3.out"
     />
+    
         <AuthProvider>
           {children}
         </AuthProvider>

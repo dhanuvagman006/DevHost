@@ -1,64 +1,19 @@
-import type { Metadata } from "next";
-import { Inter } from "next/font/google";
-import "./globals.css";
-import { AuthProvider } from "@/context/AuthContext"; // Adjust path if needed
-import CardNav from "@/components/CardNav";
-import MapSelector from "@/components/ui/MapSelector";
-const inter = Inter({ subsets: ["latin"] });
+// app/layout.tsx
 
-//import logo from '@/public/logo2.png';
- const items = [
-    {
-      label: "About",
-      bgColor: "#0D0716",
-      textColor: "#fff",
-      links: [
-        { label: "Company", ariaLabel: "About Company", href: "/about/company" },
-        { label: "Careers", ariaLabel: "About Careers", href: "/about/careers" }
-      ]
-    },
-    {
-      label: "Projects", 
-      bgColor: "#170D27",
-      textColor: "#fff",
-      links: [
-        { label: "Featured", ariaLabel: "Featured Projects" ,href: "/landing"},
-        { label: "Case Studies", ariaLabel: "Project Case Studies", href: "/projects/case-studies" }
-      ]
-    },
-    {
-      label: "Contact",
-      bgColor: "#271E37", 
-      textColor: "#fff",
-      links: [
-        { label: "Email", ariaLabel: "Email us", href: "/contact/email" },
-        { label: "Twitter", ariaLabel: "Twitter", href: "/contact/twitter" },
-        { label: "LinkedIn", ariaLabel: "LinkedIn", href: "/contact/linkedin" }
-      ]
-    }
-  ];
-
-
-
-
-export const metadata: Metadata = {
-  title: "FolkSpace - Your All-in-One Deployment Platform",
-  description: "FolkSpace is your all-in-one platform for deploying, managing, and scaling your applications seamlessly.",
-};
+import './globals.css'; // Or wherever your global styles are
 
 export default function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  // NO NextIntlClientProvider here
+  // NO getMessages or getRequestConfig here
+  // NO 'locale' prop here
   return (
-    <html lang="en">
-      <body className={inter.className}>
-        
-    
-        <AuthProvider>
-          {children}
-        </AuthProvider>
+    <html>
+      <body>
+        {children}
       </body>
     </html>
   );

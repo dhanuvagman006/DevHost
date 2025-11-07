@@ -1,0 +1,25 @@
+{
+  "dashboard": {
+    "nav": {
+      "logoAlt": "Företagslogotyp",
+      "about": "Om oss",
+      "aboutCompany": "Om företaget",
+      "company": "Företag",
+      "careers": "Karriärer",
+      "aboutCareers": "Om karriärer",
+      "projects": "Projekt",
+      "featured": "Utvalda",
+      "featuredProjects": "Utvalda projekt",
+      "caseStudies": "Fallstudier",
+      "projectCaseStudies": "Projektfallstudier",
+      "contact": "Kontakt",
+      "email": "E-post",
+      "emailUs": "Maila oss",
+      "twitter": "Twitter",
+      "linkedIn": "LinkedIn"
+    },
+    "common": {
+      "loading": "Laddar användardata..."
+    }
+  }
+}

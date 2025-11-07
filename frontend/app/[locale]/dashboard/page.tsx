@@ -3,6 +3,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { getUserId, getUserInfo } from '@/lib/api';
+import { useTranslations } from 'next-intl'; // <-- 1. IMPORT
 
 // --- REMOVED MagicBento imports ---
 // import MagicBento, { MagicBentoCard } from '@/components/MagicBento';
@@ -27,7 +28,7 @@ import { RegionalTopTable } from '@/components/dashboard/RegionalTopTable';
 import { ReplenishmentChecker } from '@/components/dashboard/ReplenishmentChecker';
 // --- END NEW IMPORTS ---
 
-// --- Mock Data ---
+// --- Mock Data (unchanged) ---
 const salesForecastData = [
   { name: 'Mon', total: 4000 },
   { name: 'Tue', total: 3000 },
@@ -47,51 +48,55 @@ const pricingSuggestionData = [
 ];
 // --- End Mock Data ---
 
-// --- FIXED: Updated CardNav items to use new color palette ---
-const items = [
-  {
-    label: 'About',
-    bgColor: 'var(--color-bg-surface)',
-    textColor: 'var(--color-text-primary)',
-    links: [
-      { label: 'Company', ariaLabel: 'About Company', href: '/about/company' },
-      { label: 'Careers', ariaLabel: 'About Careers', href: '/about/careers' },
-    ],
-  },
-  {
-    label: 'Projects',
-    bgColor: 'var(--color-bg-surface)',
-    textColor: 'var(--color-text-primary)',
-    links: [
-      {
-        label: 'Featured',
-        ariaLabel: 'Featured Projects',
-        href: '/landing',
-      },
-      {
-        label: 'Case Studies',
-        ariaLabel: 'Project Case Studies',
-        href: '/projects/case-studies',
-      },
-    ],
-  },
-  {
-    label: 'Contact',
-    bgColor: 'var(--color-bg-surface)',
-    textColor: 'var(--color-text-primary)',
-    links: [
-      { label: 'Email', ariaLabel: 'Email us', href: '/contact/email' },
-      { label: 'Twitter', ariaLabel: 'Twitter', href: '/contact/twitter' },
-      {
-        label: 'LinkedIn',
-        ariaLabel: 'LinkedIn',
-        href: '/contact/linkedin',
-      },
-    ],
-  },
-];
+// --- REMOVED: `items` array is now defined INSIDE the component ---
 
 export default function DashboardPage() {
+  const t = useTranslations('dashboard'); // <-- 2. INITIALIZE HOOK
+
+  // --- 3. MOVED `items` array inside component to access `t` ---
+  const items = [
+    {
+      label: t('nav.about'),
+      bgColor: 'var(--color-bg-surface)',
+      textColor: 'var(--color-text-primary)',
+      links: [
+        { label: t('nav.company'), ariaLabel: t('nav.aboutCompany'), href: '/about/company' },
+        { label: t('nav.careers'), ariaLabel: t('nav.aboutCareers'), href: '/about/careers' },
+      ],
+    },
+    {
+      label: t('nav.projects'),
+      bgColor: 'var(--color-bg-surface)',
+      textColor: 'var(--color-text-primary)',
+      links: [
+        {
+          label: t('nav.featured'),
+          ariaLabel: t('nav.featuredProjects'),
+          href: '/landing',
+        },
+        {
+          label: t('nav.caseStudies'),
+          ariaLabel: t('nav.projectCaseStudies'),
+          href: '/projects/case-studies',
+        },
+      ],
+    },
+    {
+      label: t('nav.contact'),
+      bgColor: 'var(--color-bg-surface)',
+      textColor: 'var(--color-text-primary)',
+      links: [
+        { label: t('nav.email'), ariaLabel: t('nav.emailUs'), href: '/contact/email' },
+        { label: t('nav.twitter'), ariaLabel: t('nav.twitter'), href: '/contact/twitter' },
+        {
+          label: t('nav.linkedIn'),
+          ariaLabel: t('nav.linkedIn'),
+          href: '/contact/linkedin',
+        },
+      ],
+    },
+  ];
+
   // --- Get user data from localStorage ---
   const [userId, setUserId] = useState<string | null>(null);
   const [userInfo, setUserInfo] = useState<any>(null);
@@ -125,7 +130,6 @@ export default function DashboardPage() {
   };
 
   // --- REFACTORED: Combined styles into a single Tailwind class string ---
-  // This replaces bentoCardStyle, bentoCardClassName, and bentoCardProps
   const bentoCardClasses =
     'flex flex-col justify-between relative w-full max-w-full rounded-[20px] font-light overflow-hidden transition-all duration-300 ease-in-out hover:-translate-y-0.5 bg-[var(--color-bg-surface)] border border-[var(--color-border)] text-[var(--color-text-secondary)]';
 
@@ -134,7 +138,7 @@ export default function DashboardPage() {
       {/* --- FIXED: Updated CardNav props to use new palette --- */}
       <CardNav
         logo="/logo.svg"
-        logoAlt="Company Logo"
+        logoAlt={t('nav.logoAlt')} // <-- 4. REPLACED STRING
         items={items}
         baseColor="#fff"
         menuColor="var(--color-text-primary)"
@@ -162,26 +166,26 @@ export default function DashboardPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* MODIFIED: Replaced MagicBentoCard with <div> */}
                 {/* <div className={bentoCardClasses}>
-                  <ChartCard
-                    title="Weekly Sales Forecast"
-                    data={salesForecastData}
-                  />
-                </div>
+                    <ChartCard
+                      title="Weekly Sales Forecast"
+                      data={salesForecastData}
+                    />
+                  </div>
 
                 {/* MODIFIED: Replaced MagicBentoCard with <div> 
-                <div className={bentoCardClasses}>
-                  <ChartCard
-                    title="AI Price Suggestions"
-                    data={pricingSuggestionData}
-                    dataKey="total"
-                  />
-                </div> */}
+                  <div className={bentoCardClasses}>
+                    <ChartCard
+                      title="AI Price Suggestions"
+                      data={pricingSuggestionData}
+                      dataKey="total"
+                    />
+                  </div> */}
 
                 {/* --- NEW MAIN CONTENT COMPONENTS START HERE --- */}
 
                 {/* Analytics Table (Spans full width of this column) */}
                 <div className={`${bentoCardClasses} md:col-span-2`}>
-                  {userId ? <AnalyticsTable userId={userId} /> : <div className="p-6 text-center text-gray-500">Loading user data...</div>}
+                  {userId ? <AnalyticsTable userId={userId} /> : <div className="p-6 text-center text-gray-500">{t('common.loading')}</div>} {/* <-- 4. REPLACED STRING */}
                 </div>
 
                 {/* Inventory Table (Spans full width of this column) */}
@@ -224,24 +228,25 @@ export default function DashboardPage() {
               </div>
 
               {/* <div className={bentoCardClasses}>
-                   {/* //<BillingForm userId={userId} /> 
-                 </div> */}
+                  {/* //<BillingForm userId={userId} /> 
+                  </div> */}
 
               {/* <div className={bentoCardClasses}>
-                   <AgentsList userId={userId} />
-                 </div> */}
+                    <AgentsList userId={userId} />
+                  </div> */}
 
               <div className={bentoCardClasses}>
-                {userId ? <AddAgentForm userId={userId} /> : <div className="p-6 text-center text-gray-500">Loading user data...</div>}
+                {userId ? <AddAgentForm userId={userId} /> : <div className="p-6 text-center text-gray-500">{t('common.loading')}</div>} {/* <-- 4. REPLACED STRING */}
               </div>
 
               {/* <div className={bentoCardClasses}>
-                {userId ? <ReplenishmentChecker userId={userId} /> : <div className="p-6 text-center text-gray-500">Loading user data...</div>}
+                {userId ? <ReplenishmentChecker userId={userId} /> : <div className="p-6 text-center text-gray-500">{t('common.loading')}</div>}
               </div> */}
 
               <div className={bentoCardClasses}>
-                {userId ? <DynamicPricingForm userId={userId} /> : <div className="p-6 text-center text-gray-500">Loading user data...</div>}
-              </div>              <div className={bentoCardClasses}>
+                {userId ? <DynamicPricingForm userId={userId} /> : <div className="p-6 text-center text-gray-500">{t('common.loading')}</div>} {/* <-- 4. REPLACED STRING */}
+              </div> 
+              <div className={bentoCardClasses}>
                 <ForecastForm />
               </div>
 

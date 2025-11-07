@@ -1,0 +1,25 @@
+{
+  "dashboard": {
+    "nav": {
+      "logoAlt": "Bedriftslogo",
+      "about": "Om oss",
+      "aboutCompany": "Om bedriften",
+      "company": "Bedrift",
+      "careers": "Karrierer",
+      "aboutCareers": "Om karrierer",
+      "projects": "Prosjekter",
+      "featured": "Utvalgte",
+      "featuredProjects": "Utvalgte prosjekter",
+      "caseStudies": "Casestudier",
+      "projectCaseStudies": "Prosjektcasestudier",
+      "contact": "Kontakt",
+      "email": "E-post",
+      "emailUs": "Send oss e-post",
+      "twitter": "Twitter",
+      "linkedIn": "LinkedIn"
+    },
+    "common": {
+      "loading": "Laster brukerdata..."
+    }
+  }
+}

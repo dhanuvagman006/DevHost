@@ -1,0 +1,25 @@
+{
+  "dashboard": {
+    "nav": {
+      "logoAlt": "Company Logo",
+      "about": "About",
+      "aboutCompany": "About Company",
+      "company": "Company",
+      "careers": "Careers",
+      "aboutCareers": "About Careers",
+      "projects": "Projects",
+      "featured": "Featured",
+      "featuredProjects": "Featured Projects",
+      "caseStudies": "Case Studies",
+      "projectCaseStudies": "Project Case Studies",
+      "contact": "Contact",
+      "email": "Email",
+      "emailUs": "Email us",
+      "twitter": "Twitter",
+      "linkedIn": "LinkedIn"
+    },
+    "common": {
+      "loading": "Loading user data..."
+    }
+  }
+}

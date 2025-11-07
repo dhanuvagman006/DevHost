@@ -1,0 +1,25 @@
+{
+  "dashboard": {
+    "nav": {
+      "logoAlt": "Firmalogo",
+      "about": "Om os",
+      "aboutCompany": "Om firmaet",
+      "company": "Firma",
+      "careers": "Karrierer",
+      "aboutCareers": "Om karrierer",
+      "projects": "Projekter",
+      "featured": "Fremhævede",
+      "featuredProjects": "Fremhævede projekter",
+      "caseStudies": "Casestudier",
+      "projectCaseStudies": "Projektcasestudier",
+      "contact": "Kontakt",
+      "email": "E-mail",
+      "emailUs": "Send os en e-mail",
+      "twitter": "Twitter",
+      "linkedIn": "LinkedIn"
+    },
+    "common": {
+      "loading": "Indlæser brugerdata..."
+    }
+  }
+}

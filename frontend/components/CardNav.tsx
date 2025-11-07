@@ -313,7 +313,14 @@ const CardNav: React.FC<CardNavProps> = ({
       {/* --- Floating Profile & Language Buttons --- */}
       <div className="absolute left-full top-1/2 -translate-y-1/2 ml-4 flex items-center gap-4">
         {/* Profile Button */}
-        <div className="hidden md:flex items-center justify-center w-11 h-11 bg-white text-gray-900 rounded-full cursor-pointer shadow-md transition-all duration-300 ease-in-out hover:bg-gray-100 hover:scale-110">
+        <div
+          className="hidden md:flex items-center justify-center w-11 h-11 bg-white text-gray-900 rounded-full cursor-pointer shadow-md transition-all duration-300 ease-in-out hover:bg-gray-100 hover:scale-110"
+          // --- MODIFICATION HERE ---
+          onClick={() => router.push("/profile")}
+          role="button"
+          tabIndex={0}
+          // --- END MODIFICATION ---
+        >
           <FaUser size={20} />
         </div>
 

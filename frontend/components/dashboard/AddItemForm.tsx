@@ -2,6 +2,7 @@
 'use client';
 import { useState, FormEvent } from 'react';
 import { api, getUserId } from '@/lib/api';
+import { useTranslations } from 'next-intl'; // Import useTranslations
 
 interface Props {
   userId?: string;
@@ -9,6 +10,8 @@ interface Props {
 }
 
 export function AddItemForm({ userId: propUserId, onItemAdded }: Props) {
+  const t = useTranslations('AddItemForm'); // Initialize translations for this component
+
   const [productName, setProductName] = useState('');
   const [quantity, setQuantity] = useState('');
   const [country, setCountry] = useState('');
@@ -22,20 +25,21 @@ export function AddItemForm({ userId: propUserId, onItemAdded }: Props) {
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
 
-  // Nordic countries for the dropdown
+  // Nordic countries for the dropdown, now using translated labels
   const nordicCountries = [
-    { value: "", label: "Select a country" },
-    { value: "denmark", label: "Denmark" },
-    { value: "finland", label: "Finland" },
-    { value: "iceland", label: "Iceland" },
-    { value: "norway", label: "Norway" },
-    { value: "sweden", label: "Sweden" },
+    { value: "", label: t('countryPlaceholder') },
+    { value: "denmark", label: t('countries.denmark') },
+    { value: "finland", label: t('countries.finland') },
+    { value: "iceland", label: t('countries.iceland') },
+    { value: "norway", label: t('countries.norway') },
+    { value: "sweden", label: t('countries.sweden') },
   ];
 
-  // Month options
-  const months = Array.from({ length: 12 }, (_, i) => ({
-    value: (i + 1).toString(),
-    label: new Date(0, i).toLocaleString('default', { month: 'long' })
+  // Month options, now using translated labels
+  const monthKeys = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12'];
+  const months = monthKeys.map(key => ({
+    value: key,
+    label: t(`months.${key}`)
   }));
 
   const handleSubmit = async (e: FormEvent) => {
@@ -48,7 +52,7 @@ export function AddItemForm({ userId: propUserId, onItemAdded }: Props) {
       // Get userId from props or localStorage
       const userId = propUserId || getUserId();
       if (!userId) {
-        throw new Error('No user ID available');
+        throw new Error(t('errorNoUserId')); // Translated error
       }
 
       const itemData = {
@@ -65,10 +69,10 @@ export function AddItemForm({ userId: propUserId, onItemAdded }: Props) {
 
       console.log('📦 Adding item:', itemData);
       const response = await api.addItem(userId, itemData);
-      const data = await response.json();
+      await response.json();
       
-      console.log('✅ Item added successfully:', data);
-      setMessage('Item added successfully!');
+      console.log('✅ Item added successfully');
+      setMessage(t('successMessage')); // Translated message
       setIsSuccess(true);
       
       // Reset form
@@ -95,7 +99,7 @@ export function AddItemForm({ userId: propUserId, onItemAdded }: Props) {
       
     } catch (error) {
       console.error('❌ Error adding item:', error);
-      setMessage(error instanceof Error ? error.message : 'Failed to add item');
+      setMessage(error instanceof Error ? error.message : t('errorMessage')); // Translated message
     } finally {
       setIsLoading(false);
     }
@@ -104,14 +108,14 @@ export function AddItemForm({ userId: propUserId, onItemAdded }: Props) {
   return (
     <form onSubmit={handleSubmit} className="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md space-y-4">
       <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Add New Product</h3>
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{t('title')}</h3>
         <div className="text-2xl">📦</div>
       </div>
       
       {/* Product Name */}
       <div>
         <label htmlFor="productName" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-          Product Name *
+          {t('productNameLabel')}
         </label>
         <input
           type="text"
@@ -119,7 +123,7 @@ export function AddItemForm({ userId: propUserId, onItemAdded }: Props) {
           value={productName}
           onChange={(e) => setProductName(e.target.value)}
           className="mt-1 block w-full rounded-md border-gray-300 shadow-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:border-blue-500 focus:ring-blue-500"
-          placeholder="e.g., Shampoo, Toothpaste"
+          placeholder={t('productNamePlaceholder')}
           required
         />
       </div>
@@ -128,7 +132,7 @@ export function AddItemForm({ userId: propUserId, onItemAdded }: Props) {
       <div className="grid grid-cols-2 gap-4">
         <div>
           <label htmlFor="country" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-            Country *
+            {t('countryLabel')}
           </label>
           <select
             id="country"
@@ -146,7 +150,7 @@ export function AddItemForm({ userId: propUserId, onItemAdded }: Props) {
         </div>
         <div>
           <label htmlFor="month" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-            Month *
+            {t('monthLabel')}
           </label>
           <select
             id="month"
@@ -155,7 +159,7 @@ export function AddItemForm({ userId: propUserId, onItemAdded }: Props) {
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:border-blue-500 focus:ring-blue-500"
             required
           >
-            <option value="">Select month</option>
+            <option value="">{t('monthPlaceholder')}</option>
             {months.map((option) => (
               <option key={option.value} value={option.value}>
                 {option.label}
@@ -169,7 +173,7 @@ export function AddItemForm({ userId: propUserId, onItemAdded }: Props) {
       <div className="grid grid-cols-2 gap-4">
         <div>
           <label htmlFor="quantity" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-            Quantity *
+            {t('quantityLabel')}
           </label>
           <input
             type="number"
@@ -183,7 +187,7 @@ export function AddItemForm({ userId: propUserId, onItemAdded }: Props) {
         </div>
         <div>
           <label htmlFor="sales" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-            Sales
+            {t('salesLabel')}
           </label>
           <input
             type="number"
@@ -192,7 +196,7 @@ export function AddItemForm({ userId: propUserId, onItemAdded }: Props) {
             onChange={(e) => setSales(e.target.value)}
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:border-blue-500 focus:ring-blue-500"
             min="0"
-            placeholder="0"
+            placeholder={t('salesPlaceholder')}
           />
         </div>
       </div>
@@ -201,7 +205,7 @@ export function AddItemForm({ userId: propUserId, onItemAdded }: Props) {
       <div className="grid grid-cols-3 gap-4">
         <div>
           <label htmlFor="costPrice" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-            Cost Price (€)
+            {t('costPriceLabel')}
           </label>
           <input
             type="number"
@@ -211,12 +215,12 @@ export function AddItemForm({ userId: propUserId, onItemAdded }: Props) {
             onChange={(e) => setCostPrice(e.target.value)}
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:border-blue-500 focus:ring-blue-500"
             min="0"
-            placeholder="0.00"
+            placeholder={t('pricePlaceholder')}
           />
         </div>
         <div>
           <label htmlFor="sellingPrice" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-            Selling Price (€)
+            {t('sellingPriceLabel')}
           </label>
           <input
             type="number"
@@ -226,12 +230,12 @@ export function AddItemForm({ userId: propUserId, onItemAdded }: Props) {
             onChange={(e) => setSellingPrice(e.target.value)}
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:border-blue-500 focus:ring-blue-500"
             min="0"
-            placeholder="0.00"
+            placeholder={t('pricePlaceholder')}
           />
         </div>
         <div>
           <label htmlFor="currentPrice" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-            Current Price (€)
+            {t('currentPriceLabel')}
           </label>
           <input
             type="number"
@@ -241,7 +245,7 @@ export function AddItemForm({ userId: propUserId, onItemAdded }: Props) {
             onChange={(e) => setCurrentPrice(e.target.value)}
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:border-blue-500 focus:ring-blue-500"
             min="0"
-            placeholder="0.00"
+            placeholder={t('pricePlaceholder')}
           />
         </div>
       </div>
@@ -249,7 +253,7 @@ export function AddItemForm({ userId: propUserId, onItemAdded }: Props) {
       {/* Expiry Date */}
       <div>
         <label htmlFor="expiryDate" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-          Expiry Date
+          {t('expiryDateLabel')}
         </label>
         <input
           type="date"
@@ -268,10 +272,10 @@ export function AddItemForm({ userId: propUserId, onItemAdded }: Props) {
         {isLoading ? (
           <div className="flex items-center justify-center space-x-2">
             <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-            <span>Adding...</span>
+            <span>{t('buttonLoadingText')}</span>
           </div>
         ) : (
-          'Add Item'
+          t('buttonText')
         )}
       </button>
       

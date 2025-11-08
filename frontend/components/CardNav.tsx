@@ -69,7 +69,7 @@ const CardNav: React.FC<CardNavProps> = ({
       links: [{ label: "Manage Billing", href: "/billing", ariaLabel: "Manage Billing" }],
     },
     {
-      label: "Support",
+      label: "Supply Chain",
       bgColor: "#dbeafe", // blue-100
       textColor: "#1e40af", // blue-800
       links: [{ label: "Contact Support", href: "/support", ariaLabel: "Contact Support" }],

@@ -200,7 +200,7 @@ export default function DashboardPage() {
               {/* MODIFIED: Replaced MagicBentoCard with <div> */}
               <div className={bentoCardClasses}>
                 <WeatherWidget
-                  locationName={selectedLocation ? selectedLocation.name : null}
+                  locationName="Sweden"
                 />
               </div>
 

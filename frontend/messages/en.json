@@ -29,17 +29,17 @@
     "avgOrderValue": "Avg. Order Value"
   },
   "InventoryTable": {
-    "loading": "Ladataan varastoa...",
-    "errorTitle": "Virhe: Varaston nouto epäonnistui",
-    "retry": "Yritä uudelleen",
-    "title": "Nykyinen varasto",
-    "itemCount": "{count, plural, one {# tuote} other {# tuotetta}}",
+    "loading": "Loading Analytics...",
+    "errorTitle": "Error: Failed to fetch inventory data",
+    "retry": "Retry",
+    "title": "Inventory Overview",
+    "itemCount": "{count} Items",
     "header": {
-      "productName": "Tuotteen nimi",
-      "country": "Maa",
-      "quantity": "Määrä",
-      "price": "Hinta",
-      "month": "Kuukausi"
+      "productName": "Product Name",
+      "country": "Country",
+      "quantity": "Quantity",
+      "price": "Price (€)",
+      "month": "Month"
     },
     "empty": {
       "message": "Ei tuotteita varastossa",
@@ -70,5 +70,48 @@
         "retailers": "Retailers"
       }
     }
+  },
+  "AddItemForm": {
+    "title": "Add New Product",
+    "productNameLabel": "Product Name *",
+    "productNamePlaceholder": "e.g., Shampoo, Toothpaste",
+    "countryLabel": "Country *",
+    "countryPlaceholder": "Select a country",
+    "countries": {
+      "denmark": "Denmark",
+      "finland": "Finland",
+      "iceland": "Iceland",
+      "norway": "Norway",
+      "sweden": "Sweden"
+    },
+    "monthLabel": "Month *",
+    "monthPlaceholder": "Select month",
+    "months": {
+      "1": "January",
+      "2": "February",
+      "3": "March",
+      "4": "April",
+      "5": "May",
+      "6": "June",
+      "7": "July",
+      "8": "August",
+      "9": "September",
+      "10": "October",
+      "11": "November",
+      "12": "December"
+    },
+    "quantityLabel": "Quantity *",
+    "salesLabel": "Sales",
+    "salesPlaceholder": "0",
+    "costPriceLabel": "Cost Price (€)",
+    "sellingPriceLabel": "Selling Price (€)",
+    "currentPriceLabel": "Current Price (€)",
+    "pricePlaceholder": "0.00",
+    "expiryDateLabel": "Expiry Date",
+    "buttonText": "Add Item",
+    "buttonLoadingText": "Adding...",
+    "successMessage": "Item added successfully!",
+    "errorMessage": "Failed to add item",
+    "errorNoUserId": "No user ID available"
   }
 }

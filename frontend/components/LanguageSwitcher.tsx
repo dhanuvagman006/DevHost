@@ -1,23 +1,26 @@
 "use client";
-import React, { useState } from "react";
+import React from "react"; // Removed useState
 import { IoLanguage } from "react-icons/io5";
-import Flag from "react-world-flags"; // <-- 1. Imported Flag component
+import Flag from "react-world-flags";
+// --- 1. Import router hooks ---
+import { useRouter, usePathname, useParams } from "next/navigation";
 
-// --- 2. Updated languages array to use isoCode ---
+// --- 2. Updated languages array to include 'locale' for the path ---
 const languages = [
-  { name: "English", isoCode: "gb" }, // 'gb' for UK
-  { name: "Svenska", isoCode: "se" },
-  { name: "Suomi", isoCode: "fi" },
-  { name: "Norsk", isoCode: "no" },
-  { name: "Dansk", isoCode: "dk" },
-  { name: "Íslenska", isoCode: "is" },
+  { name: "English", isoCode: "gb", locale: "en" }, // 'gb' flag, 'en' path
+  { name: "Svenska", isoCode: "se", locale: "se" },
+  { name: "Suomi", isoCode: "fi", locale: "fi" },
+  { name: "Norsk", isoCode: "no", locale: "no" },
+  { name: "Dansk", isoCode: "dk", locale: "dk" },
+  { name: "Íslenska", isoCode: "is", locale: "is" },
 ];
 
-// --- 3. Updated state type ---
+// --- 3. Updated Language type ---
 type Language = {
   name: string;
   isoCode: string;
-} | null;
+  locale: string; // Added locale for the path
+};
 
 interface LanguageSwitcherProps {
   isOpen: boolean;
@@ -28,24 +31,45 @@ const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({
   isOpen,
   onToggle,
 }) => {
-  const [selectedLanguage, setSelectedLanguage] = useState<Language>(null);
+  // --- 4. Get router, pathname, and params ---
+  const router = useRouter();
+  const pathname = usePathname();
+  const params = useParams();
+
+  // --- 5. Determine current language from URL params ---
+  // params.locale will be 'en', 'se', etc., from your [locale] folder
+  const currentLocale = params.locale as string;
+  const currentLanguage = languages.find(
+    (lang) => lang.locale === currentLocale
+  );
+
+  // --- 6. Handle navigation ---
+  const handleLanguageChange = (newLocale: string) => {
+    // Replace the current locale in the path with the new one
+    // e.g., '/en/dashboard' -> '/se/dashboard'
+    const newPath = pathname.replace(`/${currentLocale}`, `/${newLocale}`);
+    
+    // Use router.push to navigate to the new path
+    router.push(newPath);
+    onToggle(); // Close the dropdown
+  };
 
   return (
     <div className="relative">
       {/* Visible Button */}
       <div
-        className="hidden md:flex items-center justify-center w-11 h-11 
-        bg-white text-gray-900 rounded-full cursor-pointer shadow-md 
-        transition-all duration-300 ease-in-out 
-        hover:bg-gray-100 hover:scale-110" // <-- 4. Light theme classes
+        className="hidden md:flex items-center justify-center w-11 h-11
+        bg-white text-gray-900 rounded-full cursor-pointer shadow-md
+        transition-all duration-300 ease-in-out
+        hover:bg-gray-100 hover:scale-110"
         onClick={onToggle}
       >
-        {selectedLanguage ? (
-          // --- 5. Use Flag component for selected ---
+        {/* --- 7. Render flag based on URL, not React state --- */}
+        {currentLanguage ? (
           <Flag
-            code={selectedLanguage.isoCode}
+            code={currentLanguage.isoCode}
             width="22"
-            className="rounded-full object-cover h-[22px]" // Added styling to fit circle
+            className="rounded-full object-cover h-[22px]"
           />
         ) : (
           <IoLanguage size={22} />
@@ -55,38 +79,25 @@ const LanguageSwitcher: React.FC<LanguageSwitcherProps> = ({
       {/* Language Dropdown Menu */}
       {isOpen && (
         <div
-          className="absolute top-full left-1/2 -translate-x-1/2 mt-2 min-w-max 
-          bg-white rounded-lg shadow-lg overflow-hidden z-10" // <-- 4. Light theme classes
+          className="absolute top-full left-1/2 -translate-x-1/2 mt-2 min-w-max
+          bg-white rounded-lg shadow-lg overflow-hidden z-10"
         >
           {languages.map((lang) => (
             <div
               key={lang.name}
-              className="flex items-center gap-3 px-4 py-2 cursor-pointer 
-              hover:bg-gray-100 whitespace-nowrap text-black" // <-- 4. Light theme classes
-              onClick={() => {
-                setSelectedLanguage(lang);
-                onToggle();
-              }}
+              className="flex items-center gap-3 px-4 py-2 cursor-pointer
+              hover:bg-gray-100 whitespace-nowrap text-black"
+              // --- 8. Update onClick handler to navigate ---
+              onClick={() => handleLanguageChange(lang.locale)}
             >
-              {/* --- 6. Use Flag component in list --- */}
               <Flag code={lang.isoCode} width="20" className="rounded-sm" />
               <span className="text-base font-medium">{lang.name}</span>
             </div>
           ))}
-          {/* Reset button */}
-          {selectedLanguage && (
-            <div
-              className="flex items-center justify-center gap-2 px-4 py-2 
-              cursor-pointer hover:bg-gray-100 
-              border-t border-gray-100 text-black" // <-- 4. Light theme classes
-              onClick={() => {
-                setSelectedLanguage(null);
-                onToggle();
-              }}
-            >
-              <IoLanguage size={22} />
-            </div>
-          )}
+          {/* --- 9. Removed 'Reset' button ---
+               It's no longer needed as the URL is the single source of truth.
+               The selected language is always the one in the URL.
+           */}
         </div>
       )}
     </div>

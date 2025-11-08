@@ -1,7 +1,7 @@
-// components/dashboard/InventoryTable.tsx
 'use client';
 import { useState, useEffect } from 'react';
 import { api, getUserId } from '@/lib/api';
+import { useTranslations } from 'next-intl'; // Import useTranslations
 
 interface InventoryItem {
   _id: string;
@@ -23,13 +23,16 @@ export function InventoryTable({ userId: propUserId }: Props) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Initialize the translation function
+  // Assumes translations are namespaced under 'InventoryTable'
+  const t = useTranslations('InventoryTable');
+
   useEffect(() => {
     const fetchItems = async () => {
       try {
         setLoading(true);
         setError(null);
         
-        // Get userId from props or localStorage
         const userId = propUserId || getUserId();
         if (!userId) {
           throw new Error('No user ID available');
@@ -39,7 +42,6 @@ export function InventoryTable({ userId: propUserId }: Props) {
         const response = await api.getItems(userId);
         const data = await response.json();
         
-        // Handle the backend response structure
         const itemsList = data.items || data || [];
         console.log('📦 Inventory items received:', itemsList);
         setItems(itemsList);
@@ -60,7 +62,8 @@ export function InventoryTable({ userId: propUserId }: Props) {
       <div className="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
         <div className="flex items-center justify-center space-x-2">
           <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
-          <span className="text-gray-500 dark:text-gray-400">Loading Inventory...</span>
+          {/* Translated string */}
+          <span className="text-gray-500 dark:text-gray-400">{t('loading')}</span>
         </div>
       </div>
     );
@@ -70,12 +73,14 @@ export function InventoryTable({ userId: propUserId }: Props) {
     return (
       <div className="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
         <div className="text-center">
-          <div className="text-red-500 mb-2">Error: Failed to fetch inventory</div>
+          {/* Translated string */}
+          <div className="text-red-500 mb-2">{t('errorTitle')}</div>
           <button 
             onClick={() => window.location.reload()} 
             className="text-blue-600 hover:text-blue-500 text-sm underline"
           >
-            Retry
+            {/* Translated string */}
+            {t('retry')}
           </button>
         </div>
       </div>
@@ -85,9 +90,11 @@ export function InventoryTable({ userId: propUserId }: Props) {
   return (
     <div className="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Current Inventory</h3>
+        {/* Translated string */}
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{t('title')}</h3>
         <span className="text-sm text-gray-500 dark:text-gray-400">
-          {items.length} {items.length === 1 ? 'item' : 'items'}
+          {/* Translated string with pluralization */}
+          {t('itemCount', { count: items.length })}
         </span>
       </div>
       
@@ -95,11 +102,12 @@ export function InventoryTable({ userId: propUserId }: Props) {
         <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
           <thead className="bg-gray-50 dark:bg-gray-700">
             <tr>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Product Name</th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Country</th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Quantity</th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Price</th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Month</th>
+              {/* Translated headers */}
+              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">{t('header.productName')}</th>
+              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">{t('header.country')}</th>
+              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">{t('header.quantity')}</th>
+              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">{t('header.price')}</th>
+              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">{t('header.month')}</th>
             </tr>
           </thead>
           <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
@@ -108,8 +116,9 @@ export function InventoryTable({ userId: propUserId }: Props) {
                 <td colSpan={5} className="px-6 py-4 text-center text-gray-500 dark:text-gray-400">
                   <div className="flex flex-col items-center space-y-2">
                     <div className="text-gray-400">📦</div>
-                    <div>No items in inventory</div>
-                    <div className="text-xs">Add items using the form on the right</div>
+                    {/* Translated empty state */}
+                    <div>{t('empty.message')}</div>
+                    <div className="text-xs">{t('empty.prompt')}</div>
                   </div>
                 </td>
               </tr>
@@ -125,8 +134,8 @@ export function InventoryTable({ userId: propUserId }: Props) {
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">
                     {item.Quantity}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">
-                    ${(item.selling_price || item.cost_price || 0).toFixed(2)}
+                  <td className="px-6 py-4 whitespace-nowTwrap text-sm text-gray-500 dark:text-gray-300">
+                    €{(item.selling_price || item.cost_price || 0).toFixed(2)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">
                     {item.month}

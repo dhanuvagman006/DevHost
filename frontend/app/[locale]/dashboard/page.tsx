@@ -3,7 +3,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { getUserId, getUserInfo } from '@/lib/api';
-
+import { useTranslations } from 'next-intl';
 // --- REMOVED MagicBento imports ---
 // import MagicBento, { MagicBentoCard } from '@/components/MagicBento';
 
@@ -47,47 +47,64 @@ const pricingSuggestionData = [
 ];
 // --- End Mock Data ---
 
-// --- FIXED: Updated CardNav items to use new color palette ---
-const items = [
-  {
-    label: 'About',
-    bgColor: 'var(--color-bg-surface)',
-    textColor: 'var(--color-text-primary)',
-    links: [
-      { label: 'Company', ariaLabel: 'About Company', href: '/about/company' },
-      { label: 'Careers', ariaLabel: 'About Careers', href: '/about/careers' },
-    ],
-  },
-  {
-    label: 'Billing',
-    bgColor: 'var(--color-bg-surface)',
-    textColor: 'var(--color-text-primary)',
-    links: [
-      {
-        label: 'billing',
-        ariaLabel: 'Featured Projects',
-        href: '/billing',
-      },
-      
-    ],
-  },
-  {
-    label: 'Distributors',
-    bgColor: 'var(--color-bg-surface)',
-    textColor: 'var(--color-text-primary)',
-    links: [
-      { label: 'Email', ariaLabel: 'Email us', href: '/contact/email' },
-      { label: 'Twitter', ariaLabel: 'Twitter', href: '/contact/twitter' },
-      {
-        label: 'LinkedIn',
-        ariaLabel: 'LinkedIn',
-        href: '/contact/linkedin',
-      },
-    ],
-  },
-];
-
 export default function DashboardPage() {
+  const t = useTranslations('Dashboard');
+
+  // --- MODIFIED: CardNav items now use t() function ---
+  const items = [
+    {
+      label: t('nav.about'),
+      bgColor: 'var(--color-bg-surface)',
+      textColor: 'var(--color-text-primary)',
+      links: [
+        {
+          label: t('nav.company'),
+          ariaLabel: t('nav.aboutCompany'),
+          href: '/about/company',
+        },
+        {
+          label: t('nav.careers'),
+          ariaLabel: t('nav.aboutCareers'),
+          href: '/about/careers',
+        },
+      ],
+    },
+    {
+      label: t('nav.billing'),
+      bgColor: 'var(--color-bg-surface)',
+      textColor: 'var(--color-text-primary)',
+      links: [
+        {
+          label: t('nav.billing'),
+          ariaLabel: t('nav.featuredProjects'), // Original ARIA label
+          href: '/billing',
+        },
+      ],
+    },
+    {
+      label: t('nav.distributors'),
+      bgColor: 'var(--color-bg-surface)',
+      textColor: 'var(--color-text-primary)',
+      links: [
+        {
+          label: t('nav.email'),
+          ariaLabel: t('nav.emailUs'),
+          href: '/contact/email',
+        },
+        {
+          label: t('nav.twitter'),
+          ariaLabel: t('nav.twitter'),
+          href: '/contact/twitter',
+        },
+        {
+          label: t('nav.linkedin'),
+          ariaLabel: t('nav.linkedin'),
+          href: '/contact/linkedin',
+        },
+      ],
+    },
+  ];
+
   // --- Get user data from localStorage ---
   const [userId, setUserId] = useState<string | null>(null);
   const [userInfo, setUserInfo] = useState<any>(null);
@@ -97,15 +114,15 @@ export default function DashboardPage() {
     // Get user data on component mount
     const id = getUserId();
     const info = getUserInfo();
-    
+
     setUserId(id);
     setUserInfo(info);
-    
+
     // Set user country from user info or default to Norway
     if (info?.region) {
       setUserCountry(info.region);
     }
-    
+
     console.log('📊 Dashboard loaded for user:', id, info);
   }, []);
 
@@ -117,36 +134,22 @@ export default function DashboardPage() {
   // --- Component refresh trigger ---
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const handleItemAdded = () => {
-    setRefreshTrigger(prev => prev + 1);
+    setRefreshTrigger((prev) => prev + 1);
   };
 
   // --- REFACTORED: Combined styles into a single Tailwind class string ---
-  // This replaces bentoCardStyle, bentoCardClassName, and bentoCardProps
   const bentoCardClasses =
     'flex flex-col justify-between relative w-full max-w-full rounded-[20px] font-light overflow-hidden transition-all duration-300 ease-in-out hover:-translate-y-0.5 bg-[var(--color-bg-surface)] border border-[var(--color-border)] text-[var(--color-text-secondary)]';
 
   return (
     <div className="flex flex-col h-screen">
       {/* --- FIXED: Updated CardNav props to use new palette --- */}
-      <CardNav
-        logo="/logo.svg"
-        logoAlt="Company Logo"
-        items={items}
-        baseColor="#fff"
-        menuColor="var(--color-text-primary)"
-        buttonBgColor="var(--color-bg-surface)"
-        buttonTextColor="var(--color-text-primary)"
-        ease="power3.out"
-        isLocationSwitcherOpen={isLocationSwitcherOpen}
-        onToggleLocationSwitcher={() => setIsLocationSwitcherOpen(!isLocationSwitcherOpen)}
-        selectedLocation={selectedLocation}
-        onLocationChange={setSelectedLocation}
-      />
+      <CardNav />
       {/* <Navbar /> */}
 
       {/* --- FIXED: Updated main background and default text color --- */}
       <main className="flex-1 overflow-y-auto p-6 lg:p-8 bg-[var(--color-bg-night)] text-[var(--color-text-secondary)]">
-        {/* <h1 className="text-3xl font-bold text-gray-100 mb-6  mt-18">Dashboard</h1> */}
+        {/* <h1 className="text-3xl font-bold text-gray-100 mb-6  mt-18">{t('title')}</h1> */}
         <div className="mt-22">
           {/* --- REMOVED: <MagicBento> wrapper --- */}
 
@@ -156,33 +159,26 @@ export default function DashboardPage() {
             <div className="xl:col-span-2 flex flex-col gap-6">
               {/* Grid for the top two charts */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* MODIFIED: Replaced MagicBentoCard with <div> */}
-                {/* <div className={bentoCardClasses}>
-                  <ChartCard
-                    title="Weekly Sales Forecast"
-                    data={salesForecastData}
-                  />
-                </div>
-
-                {/* MODIFIED: Replaced MagicBentoCard with <div> 
-                <div className={bentoCardClasses}>
-                  <ChartCard
-                    title="AI Price Suggestions"
-                    data={pricingSuggestionData}
-                    dataKey="total"
-                  />
-                </div> */}
-
                 {/* --- NEW MAIN CONTENT COMPONENTS START HERE --- */}
 
                 {/* Analytics Table (Spans full width of this column) */}
                 <div className={`${bentoCardClasses} md:col-span-2`}>
-                  {userId ? <AnalyticsTable userId={userId} /> : <div className="p-6 text-center text-gray-500">Loading user data...</div>}
+                  {userId ? (
+                    <AnalyticsTable userId={userId} />
+                  ) : (
+                    // --- MODIFIED ---
+                    <div className="p-6 text-center text-gray-500">
+                      {t('loadingUserData')}
+                    </div>
+                  )}
                 </div>
 
                 {/* Inventory Table (Spans full width of this column) */}
                 <div className={`${bentoCardClasses} md:col-span-2`}>
-                  <InventoryTable userId={userId || undefined} key={refreshTrigger} />
+                  <InventoryTable
+                    userId={userId || undefined}
+                    key={refreshTrigger}
+                  />
                 </div>
 
                 {/* Top Sold Last Year */}
@@ -204,7 +200,7 @@ export default function DashboardPage() {
               {/* MODIFIED: Replaced MagicBentoCard with <div> */}
               <div className={bentoCardClasses}>
                 <WeatherWidget
-                  locationName={selectedLocation ? selectedLocation.name : null}
+                  locationName="Sweden"
                 />
               </div>
 
@@ -216,28 +212,34 @@ export default function DashboardPage() {
               {/* --- NEW SIDEBAR COMPONENTS START HERE --- */}
 
               <div className={bentoCardClasses}>
-                <AddItemForm userId={userId || undefined} onItemAdded={handleItemAdded} />
+                <AddItemForm
+                  userId={userId || undefined}
+                  onItemAdded={handleItemAdded}
+                />
               </div>
 
-              {/* <div className={bentoCardClasses}>
-                   {/* //<BillingForm userId={userId} /> 
-                 </div> */}
-
-              {/* <div className={bentoCardClasses}>
-                   <AgentsList userId={userId} />
-                 </div> */}
-
               <div className={bentoCardClasses}>
-                {userId ? <AddAgentForm userId={userId} /> : <div className="p-6 text-center text-gray-500">Loading user data...</div>}
+                {userId ? (
+                  <AddAgentForm userId={userId} />
+                ) : (
+                  // --- MODIFIED ---
+                  <div className="p-6 text-center text-gray-500">
+                    {t('loadingUserData')}
+                  </div>
+                )}
               </div>
 
-              {/* <div className={bentoCardClasses}>
-                {userId ? <ReplenishmentChecker userId={userId} /> : <div className="p-6 text-center text-gray-500">Loading user data...</div>}
-              </div> */}
-
               <div className={bentoCardClasses}>
-                {userId ? <DynamicPricingForm userId={userId} /> : <div className="p-6 text-center text-gray-500">Loading user data...</div>}
-              </div>              <div className={bentoCardClasses}>
+                {userId ? (
+                  <DynamicPricingForm userId={userId} />
+                ) : (
+                  // --- MODIFIED ---
+                  <div className="p-6 text-center text-gray-500">
+                    {t('loadingUserData')}
+                  </div>
+                )}
+              </div>
+              <div className={bentoCardClasses}>
                 <ForecastForm />
               </div>
 

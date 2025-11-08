@@ -146,7 +146,7 @@ export const getUserId = (): string | null => {
   if (typeof window === 'undefined') return null;
   
   try {
-    const userId = localStorage.getItem('userId');
+    const userId = "690e541f164b48a3147069dd";
     if (!userId) {
       console.warn('⚠️ No userId found in localStorage');
       return null;

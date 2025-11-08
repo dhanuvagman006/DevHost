@@ -1,0 +1,117 @@
+{
+  "Dashboard": {
+    "title": "Dashboard",
+    "loadingUserData": "Loading user data...",
+    "nav": {
+      "about": "About",
+      "company": "Company",
+      "aboutCompany": "About Company",
+      "careers": "Careers",
+      "aboutCareers": "About Careers",
+      "billing": "Billing",
+      "featuredProjects": "Featured Projects",
+      "distributors": "Distributors",
+      "email": "Email",
+      "emailUs": "Email us",
+      "twitter": "Twitter",
+      "linkedin": "LinkedIn"
+    }
+  },
+  "AnalyticsTable": {
+    "title": "Key Metrics",
+    "loading": "Loading Analytics...",
+    "errorPrefix": "Error: ",
+    "errorNoUserId": "No user ID provided.",
+    "changeSuffix": "from last month",
+    "totalRevenue": "Total Revenue",
+    "newCustomers": "New Customers",
+    "conversionRate": "Conversion Rate",
+    "avgOrderValue": "Avg. Order Value"
+  },
+  "InventoryTable": {
+    "loading": "Loading Analytics...",
+    "errorTitle": "Error: Failed to fetch inventory data",
+    "retry": "Retry",
+    "title": "Inventory Overview",
+    "itemCount": "{count} Items",
+    "header": {
+      "productName": "Product Name",
+      "country": "Country",
+      "quantity": "Quantity",
+      "price": "Price (€)",
+      "month": "Month"
+    },
+    "empty": {
+      "message": "Ei tuotteita varastossa",
+      "prompt": "Lisää tuotteita oikealla olevalla lomakkeella"
+    }
+  },
+  "InventoryAlerts": {
+    "title": "Inventory Alerts",
+    "lowStock": "Low Stock",
+    "expiringSoon": "Expiring Soon",
+    "quantity": "Qty: {level}",
+    "viewAll": "View All Inventory"
+  },
+  "components": {
+    "TopTable": {
+      "title": "Regional Top Sellers",
+      "loading": "Loading Regional Data...",
+      "error": "Error: Failed to fetch regional data",
+      "retry": "Retry",
+      "empty": {
+        "title": "No regional data available",
+        "subtitle": "Data from nearby retailers"
+      },
+      "headers": {
+        "product": "Product",
+        "totalSales": "Total Sales",
+        "avgPrice": "Avg Price",
+        "retailers": "Retailers"
+      }
+    }
+  },
+  "AddItemForm": {
+    "title": "Add New Product",
+    "productNameLabel": "Product Name *",
+    "productNamePlaceholder": "e.g., Shampoo, Toothpaste",
+    "countryLabel": "Country *",
+    "countryPlaceholder": "Select a country",
+    "countries": {
+      "denmark": "Denmark",
+      "finland": "Finland",
+      "iceland": "Iceland",
+      "norway": "Norway",
+      "sweden": "Sweden"
+    },
+    "monthLabel": "Month *",
+    "monthPlaceholder": "Select month",
+    "months": {
+      "1": "January",
+      "2": "February",
+      "3": "March",
+      "4": "April",
+      "5": "May",
+      "6": "June",
+      "7": "July",
+      "8": "August",
+      "9": "September",
+      "10": "October",
+      "11": "November",
+      "12": "December"
+    },
+    "quantityLabel": "Quantity *",
+    "salesLabel": "Sales",
+    "salesPlaceholder": "0",
+    "costPriceLabel": "Cost Price (€)",
+    "sellingPriceLabel": "Selling Price (€)",
+    "currentPriceLabel": "Current Price (€)",
+    "pricePlaceholder": "0.00",
+    "expiryDateLabel": "Expiry Date",
+    "buttonText": "Add Item",
+    "buttonLoadingText": "Adding...",
+    "successMessage": "Item added successfully!",
+    "errorMessage": "Failed to add item",
+    "errorNoUserId": "No user ID available"
+  }
+}

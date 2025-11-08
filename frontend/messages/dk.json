@@ -1,0 +1,74 @@
+{
+  "Dashboard": {
+    "title": "Dashboard",
+    "loadingUserData": "Indlæser brugerdata...",
+    "nav": {
+      "about": "Om",
+      "company": "Firma",
+      "aboutCompany": "Om firmaet",
+      "careers": "Karriere",
+      "aboutCareers": "Om karriere",
+      "billing": "Fakturering",
+      "featuredProjects": "Udvalgte projekter",
+      "distributors": "Distributører",
+      "email": "E-mail",
+      "emailUs": "Send os en e-mail",
+      "twitter": "Twitter",
+      "linkedin": "LinkedIn"
+    }
+  },
+  "AnalyticsTable": {
+    "title": "Nøgletal",
+    "loading": "Indlæser analyser...",
+    "errorPrefix": "Fejl: ",
+    "errorNoUserId": "Intet bruger-id angivet.",
+    "changeSuffix": "fra sidste måned",
+    "totalRevenue": "Samlet omsætning",
+    "newCustomers": "Nye kunder",
+    "conversionRate": "Konverteringsrate",
+    "avgOrderValue": "Gns. ordreværdi"
+  },
+  "InventoryTable": {
+    "loading": "Indlæser lager...",
+    "errorTitle": "Fejl: Kunne ikke hente lager",
+    "retry": "Prøv igen",
+    "title": "Nuværende lager",
+    "itemCount": "{count, plural, one {# vare} other {# varer}}",
+    "header": {
+      "productName": "Produktnavn",
+      "country": "Land",
+      "quantity": "Antal",
+      "price": "Pris",
+      "month": "Måned"
+    },
+    "empty": {
+      "message": "Ingen varer på lager",
+      "prompt": "Tilføj varer ved hjælp af formularen til højre"
+    }
+  },
+  "InventoryAlerts": {
+    "title": "Lageradvarsler",
+    "lowStock": "Lagerbeholdning lav",
+    "expiringSoon": "Udløber snart",
+    "quantity": "Antal: {level}",
+    "viewAll": "Se hele lageret"
+  },
+  "components": {
+    "TopTable": {
+      "title": "Regionale topsælgere",
+      "loading": "Indlæser regionale data...",
+      "error": "Fejl: Kunne ikke hente regionale data",
+      "retry": "Prøv igen",
+      "empty": {
+        "title": "Ingen regionale data tilgængelige",
+        "subtitle": "Data fra nærliggende forhandlere"
+      },
+      "headers": {
+        "product": "Produkt",
+        "totalSales": "Samlet salg",
+        "avgPrice": "Gns. pris",
+        "retailers": "Forhandlere"
+      }
+    }
+  }
+}

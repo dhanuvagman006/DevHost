@@ -1,0 +1,74 @@
+{
+  "Dashboard": {
+    "title": "Kojelauta",
+    "loadingUserData": "Ladataan käyttäjätietoja...",
+    "nav": {
+      "about": "Tietoja",
+      "company": "Yritys",
+      "aboutCompany": "Tietoja yrityksestä",
+      "careers": "Urat",
+      "aboutCareers": "Tietoja uramahdollisuuksista",
+      "billing": "Laskutus",
+      "featuredProjects": "Esitellyt projektit",
+      "distributors": "Jakelijat",
+      "email": "Sähköposti",
+      "emailUs": "Lähetä meille sähköpostia",
+      "twitter": "Twitter",
+      "linkedin": "LinkedIn"
+    }
+  },
+  "AnalyticsTable": {
+    "title": "Avainluvut",
+    "loading": "Ladataan analytiikkaa...",
+    "errorPrefix": "Virhe: ",
+    "errorNoUserId": "Käyttäjätunnusta ei annettu.",
+    "changeSuffix": "viime kuukaudesta",
+    "totalRevenue": "Kokonaistuotot",
+    "newCustomers": "Uudet asiakkaat",
+    "conversionRate": "Konversioprosentti",
+    "avgOrderValue": "Tilauksen keskiarvo"
+  },
+  "InventoryTable": {
+    "loading": "Ladataan varastoa...",
+    "errorTitle": "Virhe: Varaston nouto epäonnistui",
+    "retry": "Yritä uudelleen",
+    "title": "Nykyinen varasto",
+    "itemCount": "{count, plural, one {# tuote} other {# tuotetta}}",
+    "header": {
+      "productName": "Tuotteen nimi",
+      "country": "Maa",
+      "quantity": "Määrä",
+      "price": "Hinta",
+      "month": "Kuukausi"
+    },
+    "empty": {
+      "message": "Ei tuotteita varastossa",
+      "prompt": "Lisää tuotteita oikealla olevalla lomakkeella"
+    }
+  },
+  "InventoryAlerts": {
+    "title": "Varastohälytykset",
+    "lowStock": "Vähissä varastossa",
+    "expiringSoon": "Vanhenee pian",
+    "quantity": "Määrä: {level}",
+    "viewAll": "Katso koko varasto"
+  },
+  "components": {
+    "TopTable": {
+      "title": "Alueelliset myyntihitit",
+      "loading": "Ladataan aluetietoja...",
+      "error": "Virhe: Alueellisten tietojen nouto epäonnistui",
+      "retry": "Yritä uudelleen",
+      "empty": {
+        "title": "Alueellisia tietoja ei saatavilla",
+        "subtitle": "Tiedot läheisiltä jälleenmyyjiltä"
+      },
+      "headers": {
+        "product": "Tuote",
+        "totalSales": "Myynti yhteensä",
+        "avgPrice": "Keskihinta",
+        "retailers": "Jälleenmyyjät"
+      }
+    }
+  }
+}

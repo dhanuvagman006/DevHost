@@ -1,0 +1,74 @@
+{
+  "Dashboard": {
+    "title": "Mælaborð",
+    "loadingUserData": "Hleð inn notendagögnum...",
+    "nav": {
+      "about": "Um",
+      "company": "Fyrirtæki",
+      "aboutCompany": "Um fyrirtækið",
+      "careers": "Starfsferill",
+      "aboutCareers": "Um starfsferil",
+      "billing": "Innheimta",
+      "featuredProjects": "Valin verkefni",
+      "distributors": "Dreifingaraðilar",
+      "email": "Netfang",
+      "emailUs": "Sendu okkur tölvupóst",
+      "twitter": "Twitter",
+      "linkedin": "LinkedIn"
+    }
+  },
+  "AnalyticsTable": {
+    "title": "Lykilmælikvarðar",
+    "loading": "Hleð inn greiningum...",
+    "errorPrefix": "Villa: ",
+    "errorNoUserId": "Ekkert notandaauðkenni gefið upp.",
+    "changeSuffix": "frá síðasta mánuði",
+    "totalRevenue": "Heildartekjur",
+    "newCustomers": "Nýir viðskiptavinir",
+    "conversionRate": "Umbreytingarhlutfall",
+    "avgOrderValue": "Meðal pöntunarverðmæti"
+  },
+  "InventoryTable": {
+    "loading": "Hleð inn birgðum...",
+    "errorTitle": "Villa: Tókst ekki að sækja birgðir",
+    "retry": "Reyna aftur",
+    "title": "Núverandi birgðir",
+    "itemCount": "{count, plural, one {# vara} other {# vörur}}",
+    "header": {
+      "productName": "Vöruheiti",
+      "country": "Land",
+      "quantity": "Magn",
+      "price": "Verð",
+      "month": "Mánuður"
+    },
+    "empty": {
+      "message": "Engar vörur í birgðum",
+      "prompt": "Bættu við vörum með því að nota eyðublaðið hægra megin"
+    }
+  },
+  "InventoryAlerts": {
+    "title": "Birgðaviðvaranir",
+    "lowStock": "Lítil birgð",
+    "expiringSoon": "Rennur út fljótlega",
+    "quantity": "Magn: {level}",
+    "viewAll": "Skoða allar birgðir"
+  },
+  "components": {
+    "TopTable": {
+      "title": "Svæðisbundnir söluhæstu",
+      "loading": "Hleður svæðisgögnum...",
+      "error": "Villa: Tókst ekki að sækja svæðisgögn",
+      "retry": "Reyna aftur",
+      "empty": {
+        "title": "Engin svæðisgögn tiltæk",
+        "subtitle": "Gögn frá nálægum söluaðilum"
+      },
+      "headers": {
+        "product": "Vara",
+        "totalSales": "Heildarsala",
+        "avgPrice": "Meðalverð",
+        "retailers": "Söluaðilar"
+      }
+    }
+  }
+}

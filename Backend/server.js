@@ -1,16 +1,12 @@
 const express = require("express");
-// const tls = require('tls');
-// tls.DEFAULT_MIN_VERSION = 'TLSv1.2';
-// tls.DEFAULT_MAX_VERSION = 'TLSv1.2';
-// console.log('OpenSSL:', process.versions.openssl, 'TLS range:', tls.DEFAULT_MIN_VERSION, '→', tls.DEFAULT_MAX_VERSION);
 
 const { MongoClient, ObjectId } = require("mongodb");
 const cors = require("cors");
 // const cacheMiddleware = require("./middleware/cacheMiddleware");
-// const { clearCache } = require("./utils/cacheUtils");
+// const { clearCache } = require("./utils/cacheUtils"); //for cacheing redies
 
 
-require("dotenv").config();
+require("dotenv").config(); 
 const nodemailer = require("nodemailer");
 const PORT = process.env.PORT || 5000;
 

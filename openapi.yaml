@@ -1,4 +1,3 @@
-
 openapi: 3.0.3
 info:
   title: Nordic Retail Backend API
@@ -45,9 +44,27 @@ paths:
                 username: { type: string }
                 email: { type: string }
                 region: { type: string }
+            examples:
+              example-1:
+                value:
+                  username: "new_retailer"
+                  email: "retailer@example.com"
+                  region: "sweden"
       responses:
         '201':
           description: Retailer created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message: { type: string }
+                  userId: { type: string }
+              examples:
+                example-1:
+                  value:
+                    message: "Database 'new_retailer' created"
+                    userId: "690e629a74dabbd3302b50cc"
         '400':
           description: Missing or duplicate username
 
@@ -60,6 +77,7 @@ paths:
           in: path
           required: true
           schema: { type: string }
+          example: "690e629a74dabbd3302b50cc"
       requestBody:
         required: true
         content:
@@ -70,16 +88,40 @@ paths:
               properties:
                 product_name: { type: string }
                 quantity: { type: number }
-                expiryDate: { type: string }
+                expiryDate: { type: string, format: date }
                 country: { type: string }
                 month: { type: integer, minimum: 1, maximum: 12 }
                 cost_price: { type: number }
                 selling_price: { type: number }
                 current_price: { type: number, description: "Initial set price used for billing; also stored in current_stock" }
                 sales: { type: number }
+            examples:
+              example-1:
+                value:
+                  product_name: "shampoo"
+                  quantity: 100
+                  expiryDate: "2026-12-31"
+                  country: "sweden"
+                  month: 11
+                  cost_price: 25
+                  selling_price: 50
+                  current_price: 48.99
+                  sales: 50
       responses:
         '201':
           description: Item added
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message: { type: string }
+                  itemId: { type: string }
+              examples:
+                example-1:
+                  value:
+                    message: "Item added successfully"
+                    itemId: "60d5ecb0a3d4a91a7c8e8b1b"
 
   /getItems/{userId}:
     get:
@@ -90,9 +132,33 @@ paths:
           in: path
           required: true
           schema: { type: string }
+          example: "690e629a74dabbd3302b50cc"
       responses:
         '200':
           description: List of inventory items
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      type: object
+              examples:
+                example-1:
+                  value:
+                    items:
+                      - _id: "60d5ecb0a3d4a91a7c8e8b1b"
+                        product_name: "shampoo"
+                        Quantity: 100
+                        Expiry_Date: "2026-12-31"
+                        country: "sweden"
+                        month: 11
+                        cost_price: 25
+                        selling_price: 50
+                        sales: 50
+                        createdAt: "2025-11-08T10:00:00Z"
 
   /getDeliveryAgents/{userId}:
     get:
@@ -103,12 +169,32 @@ paths:
           in: path
           required: true
           schema: { type: string }
+          example: "690e629a74dabbd3302b50cc"
         - name: location
           in: query
           schema: { type: string }
+          example: "stockholm"
       responses:
         '200':
           description: Agents list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  agents:
+                    type: array
+                    items:
+                      type: object
+              examples:
+                example-1:
+                  value:
+                    agents:
+                      - _id: "60d5ed0fa3d4a91a7c8e8b1c"
+                        delivery_name: "Speedy Deliveries"
+                        delivery_number: "123-456-7890"
+                        location: "stockholm"
+                        createdAt: "2025-11-08T10:05:00Z"
 
   /addDeliveryAgent/{userId}:
     post:
@@ -119,6 +205,7 @@ paths:
           in: path
           required: true
           schema: { type: string }
+          example: "690e629a74dabbd3302b50cc"
       requestBody:
         required: true
         content:
@@ -130,9 +217,27 @@ paths:
                 delivery_name: { type: string }
                 delivery_number: { type: string }
                 location: { type: string }
+            examples:
+              example-1:
+                value:
+                  delivery_name: "Quick Ship"
+                  delivery_number: "098-765-4321"
+                  location: "oslo"
       responses:
         '201':
           description: Agent created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message: { type: string }
+                  agentId: { type: string }
+              examples:
+                example-1:
+                  value:
+                    message: "Delivery Agent added successfully for oslo"
+                    agentId: "60d5ed47a3d4a91a7c8e8b1d"
 
   /getDeliveryAgentsByLocation/{userId}/{location}:
     get:
@@ -143,13 +248,35 @@ paths:
           in: path
           required: true
           schema: { type: string }
+          example: "690e629a74dabbd3302b50cc"
         - name: location
           in: path
           required: true
           schema: { type: string }
+          example: "copenhagen"
       responses:
         '200':
           description: Agents list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  location: { type: string }
+                  agents:
+                    type: array
+                    items:
+                      type: object
+              examples:
+                example-1:
+                  value:
+                    location: "copenhagen"
+                    agents:
+                      - _id: "60d5ed8da3d4a91a7c8e8b1e"
+                        delivery_name: "DaneTrans"
+                        delivery_number: "111-222-3333"
+                        location: "copenhagen"
+                        createdAt: "2025-11-08T10:10:00Z"
 
   /forecast:
     post:
@@ -172,9 +299,39 @@ paths:
                 season_index: { type: number }
                 economic_index: { type: number }
                 stock_level: { type: number }
+            examples:
+              example-1:
+                value:
+                  country: "norway"
+                  product_name: "soap"
+                  month: 12
+                  avg_price: 15
+                  promotion: 1
+                  previous_sales: 400
+                  season_index: 1.2
+                  economic_index: 0.98
+                  stock_level: 500
       responses:
         '200':
           description: Forecast results
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  source: { type: string }
+                  forecasted_sales: { type: number }
+                  suggested_stock: { type: number }
+                  note: { type: string }
+              examples:
+                example-1:
+                  value:
+                    success: true
+                    source: "python-ml"
+                    forecasted_sales: 450
+                    suggested_stock: 500
+                    note: "Predicted by Python ML microservice"
 
   /analytics/{userId}:
     get:
@@ -185,9 +342,31 @@ paths:
           in: path
           required: true
           schema: { type: string }
+          example: "690e629a74dabbd3302b50cc"
       responses:
         '200':
           description: Analytics summary
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  summary:
+                    type: array
+                    items:
+                      type: object
+              examples:
+                example-1:
+                  value:
+                    success: true
+                    summary:
+                      - product_name: "shampoo"
+                        country: "sweden"
+                        totalSales: 1200
+                        avgPrice: 49.50
+                        avgStockQty: 150.5
+                        countMonths: 12
 
   /set-price/{userId}:
     post:
@@ -198,6 +377,7 @@ paths:
           in: path
           required: true
           schema: { type: string }
+          example: "690e629a74dabbd3302b50cc"
       requestBody:
         required: true
         content:
@@ -209,9 +389,27 @@ paths:
                 product_name: { type: string }
                 country: { type: string }
                 current_price: { type: number }
+            examples:
+              example-1:
+                value:
+                  product_name: "shampoo"
+                  country: "sweden"
+                  current_price: 52.99
       responses:
         '200':
           description: Current price updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  upserted: { type: boolean }
+              examples:
+                example-1:
+                  value:
+                    success: true
+                    upserted: false
 
   /stock/{userId}:
     get:
@@ -222,15 +420,39 @@ paths:
           in: path
           required: true
           schema: { type: string }
+          example: "690e629a74dabbd3302b50cc"
         - name: product_name
           in: query
           schema: { type: string }
+          example: "shampoo"
         - name: country
           in: query
           schema: { type: string }
+          example: "sweden"
       responses:
         '200':
           description: Current stock list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  stock:
+                    type: array
+                    items:
+                      type: object
+              examples:
+                example-1:
+                  value:
+                    success: true
+                    stock:
+                      - _id: "60d5ee5fa3d4a91a7c8e8b1f"
+                        product_name: "shampoo"
+                        country: "sweden"
+                        quantity: 88
+                        current_price: 52.99
+                        updatedAt: "2025-11-08T10:15:00Z"
 
   /bill/{userId}:
     post:
@@ -241,6 +463,7 @@ paths:
           in: path
           required: true
           schema: { type: string }
+          example: "690e629a74dabbd3302b50cc"
       requestBody:
         required: true
         content:
@@ -258,6 +481,283 @@ paths:
                       product_name: { type: string }
                       country: { type: string }
                       quantity: { type: number, minimum: 1 }
+            examples:
+              example-1:
+                value:
+                  items:
+                    - product_name: "shampoo"
+                      country: "sweden"
+                      quantity: 2
+                    - product_name: "soap"
+                      country: "sweden"
+                      quantity: 5
       responses:
         '200':
           description: Billing summary with updated stock
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  items:
+                    type: array
+                    items:
+                      type: object
+                  grand_total: { type: number }
+                  message: { type: string }
+              examples:
+                example-1:
+                  value:
+                    success: true
+                    items:
+                      - product_name: "shampoo"
+                        country: "sweden"
+                        quantity: 2
+                        price: 52.99
+                        total: 105.98
+                      - product_name: "soap"
+                        country: "sweden"
+                        quantity: 5
+                        price: 15.00
+                        total: 75.00
+                    grand_total: 180.98
+                    message: "Billing completed, stock updated, and alerts sent if required."
+
+  /out-of-stock/{userId}:
+    get:
+      tags: [Stock]
+      summary: Get out-of-stock items for a retailer
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema: { type: string }
+          example: "690e629a74dabbd3302b50cc"
+      responses:
+        '200':
+          description: List of out-of-stock items
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  message: { type: string }
+                  count: { type: integer }
+                  items:
+                    type: array
+                    items:
+                      type: object
+              examples:
+                example-1:
+                  value:
+                    success: true
+                    message: "Found 1 out-of-stock item(s)."
+                    count: 1
+                    items:
+                      - product_name: "lotion"
+                        country: "denmark"
+                        quantity: 0
+                        last_updated: "2025-11-08T12:00:00Z"
+
+  /top-sold-city:
+    post:
+      tags: [Analytics]
+      summary: Add top sold items for a city (global)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [city, top_sold]
+              properties:
+                city: { type: string }
+                top_sold:
+                  type: array
+                  items:
+                    type: object
+            examples:
+              example-1:
+                value:
+                  city: "stockholm"
+                  top_sold:
+                    - product_name: "shampoo"
+                      totalSales: 5000
+                      avgPrice: 50
+                      country: "sweden"
+      responses:
+        '201':
+          description: Data added
+
+  /top-sold-city/{city}:
+    get:
+      tags: [Analytics]
+      summary: Get top sold items for a city (global)
+      parameters:
+        - name: city
+          in: path
+          required: true
+          schema: { type: string }
+          example: "stockholm"
+      responses:
+        '200':
+          description: Top sold items for the city
+
+  /distributors:
+    post:
+      tags: [DeliveryAgents]
+      summary: Add distributors for a location (global)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [location, distributors]
+              properties:
+                location: { type: string }
+                distributors:
+                  type: array
+                  items:
+                    type: object
+            examples:
+              example-1:
+                value:
+                  location: "oslo"
+                  distributors:
+                    - name: "Nordic Distributors"
+                      contact: "555-1234"
+                      email: "contact@nordicdist.com"
+      responses:
+        '201':
+          description: Distributors added
+
+  /distributors/{location}:
+    get:
+      tags: [DeliveryAgents]
+      summary: Get distributors for a location (global)
+      parameters:
+        - name: location
+          in: path
+          required: true
+          schema: { type: string }
+          example: "oslo"
+      responses:
+        '200':
+          description: List of distributors
+
+  /dynamic-pricing/{userId}:
+    post:
+      tags: [Pricing]
+      summary: Adjust product price based on demand and stock
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema: { type: string }
+          example: "690e629a74dabbd3302b50cc"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [product_name, country]
+              properties:
+                product_name: { type: string }
+                country: { type: string }
+            examples:
+              example-1:
+                value:
+                  product_name: "shampoo"
+                  country: "sweden"
+      responses:
+        '200':
+          description: Dynamic pricing result
+
+  /low-stock/{userId}:
+    get:
+      tags: [Stock]
+      summary: Get items with low stock
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema: { type: string }
+          example: "690e629a74dabbd3302b50cc"
+        - name: threshold
+          in: query
+          schema: { type: integer }
+          example: 20
+      responses:
+        '200':
+          description: List of low-stock items
+
+  /top-sold/{userId}:
+    get:
+      tags: [Analytics]
+      summary: Get top sold products for the same month last year
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema: { type: string }
+          example: "690e629a74dabbd3302b50cc"
+        - name: limit
+          in: query
+          schema: { type: integer }
+          example: 3
+      responses:
+        '200':
+          description: Top sold products
+
+  /regional-top/{country}:
+    get:
+      tags: [Analytics]
+      summary: Get top sold products across retailers in a country
+      parameters:
+        - name: country
+          in: path
+          required: true
+          schema: { type: string }
+          example: "sweden"
+        - name: limit
+          in: query
+          schema: { type: integer }
+          example: 5
+      responses:
+        '200':
+          description: Region's top sold products
+
+  /restock-order:
+    post:
+      tags: [Stock]
+      summary: Place a restock order (auto-selects distributor)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [userId, city, order_items]
+              properties:
+                userId: { type: string }
+                city: { type: string }
+                order_items:
+                  type: array
+                  items:
+                    type: object
+            examples:
+              example-1:
+                value:
+                  userId: "690e629a74dabbd3302b50cc"
+                  city: "stockholm"
+                  order_items:
+                    - product_name: "shampoo"
+                      quantity: 50
+      responses:
+        '200':
+          description: Restock order confirmation
+

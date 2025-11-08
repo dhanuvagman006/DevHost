@@ -3,7 +3,7 @@
 import React, { useState, useMemo } from 'react';
 // Assuming ProtectedRoute is in this path
 // import { ProtectedRoute } from '@/components/ProtectedRoute';
-
+import CardNav from '@/components/CardNav';
 // --- TYPE DEFINITIONS ---
 
 type Product = {
@@ -205,6 +205,7 @@ export default function App() {
       <ThemeStyles />
       
       <ProtectedRoute>
+        <CardNav/>
         {/* Main container uses new theme variables for bg and text */}
         <div className="w-full h-screen bg-[var(--color-bg-night)] text-[var(--color-text-secondary)] font-sans overflow-hidden grid grid-cols-1 lg:grid-cols-3">
           

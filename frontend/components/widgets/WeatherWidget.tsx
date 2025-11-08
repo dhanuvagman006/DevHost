@@ -1,217 +1,179 @@
 "use client";
-
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import {
   Sun,
   Cloud,
-  Thermometer,
+  CloudRain,
   CloudSnow,
   Wind,
-  CloudRain,
-  Snowflake,
-  MapPin,
+  Thermometer,
+  Loader2, // For a better loading icon
 } from "lucide-react";
-import { ReactNode } from "react";
 
-// --- Weather Visuals ---
-interface WeatherVisuals {
-  icon: ReactNode;
-  gradient: string;
-  textColor: string;
-  impactColor: string;
+// --- Exported types and data for external control ---
+
+export interface WeatherData {
+  temperature: number;
+  windspeed: number;
+  description: string;
+  icon: JSX.Element;
 }
-type WeatherCondition =
-  | "Snowy"
-  | "Snowstorm"
-  | "Sunny"
-  | "Windy"
-  | "Rainy"
-  | "Cloudy"
-  | "Foggy"
-  | string;
 
-const getWeatherVisuals = (condition: WeatherCondition): WeatherVisuals => {
-  const iconSize = "w-12 h-12";
-  switch (condition) {
-    case "Snowy":
-      return {
-        icon: <CloudSnow className={`${iconSize} text-white`} />,
-        gradient: "from-blue-300 to-cyan-200",
-        textColor: "text-blue-900",
-        impactColor: "text-blue-700",
-      };
-    case "Snowstorm":
-      return {
-        icon: <Snowflake className={`${iconSize} text-white animate-spin-slow`} />,
-        gradient: "from-gray-400 to-blue-500",
-        textColor: "text-gray-900",
-        impactColor: "text-red-700 font-semibold",
-      };
-    case "Sunny":
-      return {
-        icon: <Sun className={`${iconSize} text-yellow-500`} />,
-        gradient: "from-yellow-200 to-orange-200",
-        textColor: "text-orange-900",
-        impactColor: "text-orange-700",
-      };
-    case "Windy":
-      return {
-        icon: <Wind className={`${iconSize} text-teal-500`} />,
-        gradient: "from-teal-100 to-green-100",
-        textColor: "text-teal-900",
-        impactColor: "text-teal-700",
-      };
-    case "Rainy":
-      return {
-        icon: <CloudRain className={`${iconSize} text-blue-500`} />,
-        gradient: "from-gray-300 to-blue-300",
-        textColor: "text-gray-900",
-        impactColor: "text-blue-700",
-      };
-    case "Foggy":
-    case "Cloudy":
-    default:
-      return {
-        icon: <Cloud className={`${iconSize} text-gray-500`} />,
-        gradient: "from-gray-100 to-gray-200",
-        textColor: "text-gray-800",
-        impactColor: "text-gray-600",
-      };
-  }
-};
-const impactMap: Record<string, string> = {
-  Sunny: "Low impact. Boost in outdoor activity sales.",
-  Cloudy: "Low impact. Steady retail behavior.",
-  Rainy: "Moderate impact. Demand for umbrellas and jackets.",
-  Snowy: "High impact. Increased demand for winter wear.",
-  Snowstorm: "Severe impact. Likely delays, emergency gear sales.",
-  Windy: "Moderate impact. Increased demand for windbreakers.",
-  Foggy: "Low visibility, possible travel delays.",
+// Mock data for different locations
+export const mockDataStore: Record<string, WeatherData> = {
+  Default: {
+    temperature: 12,
+    windspeed: 15,
+    description: "Cloudy",
+    icon: <Cloud size={80} />,
+  },
+  Sweden: {
+    temperature: 5,
+    windspeed: 20,
+    description: "Snowy",
+    icon: <CloudSnow size={80} />,
+  },
+  Finland: {
+    temperature: 2,
+    windspeed: 18,
+    description: "Very Cold",
+    icon: <CloudSnow size={80} />,
+  },
+  Norway: {
+    temperature: 8,
+    windspeed: 25,
+    description: "Windy",
+    icon: <Wind size={80} />,
+  },
+  Denmark: {
+    temperature: 10,
+    windspeed: 12,
+    description: "Rainy",
+    icon: <CloudRain size={80} />,
+  },
+  Iceland: {
+    temperature: 1,
+    windspeed: 30,
+    description: "Icy",
+    icon: <Thermometer size={80} />,
+  },
+  Sunny: {
+    temperature: 24,
+    windspeed: 5,
+    description: "Sunny",
+    icon: <Sun size={80} />,
+  },
 };
 
-// --- Props for the widget ---
+// Export the keys for easy use in dropdowns/buttons
+export type MockLocationKey = keyof typeof mockDataStore;
+
+// --- Component Props ---
+
 interface WeatherWidgetProps {
+  // Use locationName to fetch data (real or mock)
   locationName: string | null;
+
+  // Use overrideWeather to manually set the state for demonstration
+  // This will bypass the internal loading and fetching state
+  overrideWeather?: WeatherData | null;
 }
 
-// --- Main Weather Widget ---
-export default function WeatherWidget({ locationName }: WeatherWidgetProps) {
-  const [weather, setWeather] = useState<any>(null);
+// --- The Widget Component ---
+
+const WeatherWidget: React.FC<WeatherWidgetProps> = ({
+  locationName,
+  overrideWeather,
+}) => {
+  const [weather, setWeather] = useState<WeatherData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // If no location is selected, show a default state
-    if (!locationName) {
-      setWeather({
-        location: "Nordic Region",
-        temperature: 10,
-        condition: "Cloudy",
-      });
-      setLoading(false);
-      setError(null);
-      return; // Don't proceed to fetch
-    }
+    // If overrideWeather is provided, this internal logic is less important
+    // but we still run it in case overrideWeather is removed
+    // to show the "fetched" state.
 
-    // A location IS selected, so "fetch" data
-    const MOCK_SUCCESS = true;
-    const SIMULATED_DELAY = 500; // 0.5 seconds
-
+    // --- MOCK LOGIC FOR PRESENTATION ---
     setLoading(true);
-
     const timer = setTimeout(() => {
-      if (MOCK_SUCCESS) {
-        // --- DYNAMIC MOCK DATA based on prop ---
-        let mockData;
-        switch (locationName) {
-          case "Sweden":
-            mockData = { location: "Stockholm", temperature: 15, condition: "Cloudy" };
-            break;
-          case "Finland":
-            mockData = { location: "Helsinki", temperature: 10, condition: "Rainy" };
-            break;
-          case "Norway":
-            mockData = { location: "Oslo", temperature: 12, condition: "Windy" };
-            break;
-          case "Denmark":
-            mockData = { location: "Copenhagen", temperature: 18, condition: "Sunny" };
-            break;
-          case "Iceland":
-            mockData = { location: "Reykjavik", temperature: 5, condition: "Snowy" };
-            break;
-          default:
-            mockData = { location: locationName, temperature: 10, condition: "Cloudy" };
-        }
-        setWeather(mockData);
-        // ------------------------
-        setError(null);
+      if (locationName && mockDataStore[locationName]) {
+        setWeather(mockDataStore[locationName]);
       } else {
-        setError(`Failed to fetch data for ${locationName}.`);
-        setWeather(null);
+        setWeather(mockDataStore["Default"]); // Fallback to default mock
       }
       setLoading(false);
-    }, SIMULATED_DELAY);
+    }, 500);
 
-    // Cleanup function to clear the timer
     return () => clearTimeout(timer);
-  }, [locationName]); // <-- This dependency array makes it all work!
+    // --- END OF MOCK LOGIC ---
+
+    // --- REAL FETCH LOGIC (Commented out) ---
+    /*
+      Your real fetch logic would go here.
+      It would be skipped if overrideWeather is set, 
+      or you could disable this useEffect entirely when overrideWeather is active.
+    */
+    // --- END OF REAL FETCH LOGIC ---
+  }, [locationName]);
 
   // --- Render Logic ---
-  if (loading) {
+
+  // Helper function to render the weather content
+  // This is used for both overrideWeather and the internal state
+  const renderWeatherContent = (data: WeatherData | null) => {
+    if (!data) {
+      return (
+        <div className="flex flex-col items-center justify-center h-full text-center">
+          <p className="text-lg opacity-80">No weather data.</p>
+          <p className="text-sm opacity-60">Select a location.</p>
+        </div>
+      );
+    }
+
     return (
-      <div className="p-5 rounded-lg shadow-md bg-gray-100 text-gray-500 italic flex items-center gap-2">
-        <MapPin className="w-5 h-5 animate-pulse" />
-        Fetching weather data for {locationName}...
+      <div className="flex flex-col items-center justify-between h-full text-center space-y-4">
+        {/* Icon */}
+        <div className="text-white opacity-90 pt-4">{data.icon}</div>
+
+        {/* Main Info */}
+        <div className="text-center">
+          <p className="text-6xl font-extrabold">{data.temperature}°C</p>
+          <p className="text-xl capitalize opacity-80">{data.description}</p>
+        </div>
+
+        {/* Extra Info */}
+        <div className="pb-4">
+          <p className="text-sm opacity-70">
+            Wind: {data.windspeed} km/h
+          </p>
+        </div>
       </div>
     );
-  }
-
-  if (error) {
-    return (
-      <div className="p-5 rounded-lg shadow-md bg-red-100 text-red-700 italic flex items-center gap-2">
-        <MapPin className="w-5 h-5" />
-        {error}
-      </div>
-    );
-  }
-
-  if (!weather) {
-    return null;
-  }
-
-  const visuals = getWeatherVisuals(weather.condition);
-  const tempColor = weather.temperature <= 0 ? "text-blue-500" : "text-red-500";
-  const impact = impactMap[weather.condition] || "Normal conditions.";
+  };
 
   return (
-    <div
-      className={`p-5 rounded-lg shadow-md bg-gradient-to-br ${visuals.gradient} transition-all duration-1000 ease-in-out`}
-    >
-      <h3 className={`text-lg font-semibold ${visuals.textColor} mb-4`}>
-        Weather for {weather.location}
+    <div className="p-6 text-white bg-gradient-to-br from-blue-500 to-indigo-700 rounded-2xl shadow-lg w-full max-w-xs mx-auto min-h-[360px] flex flex-col">
+      <h3 className="text-2xl font-bold mb-4 text-center text-white/90 flex-shrink-0">
+        {overrideWeather ? "Demo Mode" : locationName || "Nordic Weather"}
       </h3>
 
-      <div className="flex items-center gap-4">
-        <div className="flex-shrink-0">{visuals.icon}</div>
-        <div className="flex-1">
-          <p className={`text-xl font-bold ${visuals.textColor}`}>
-            {weather.location}
-          </p>
-          <p className={`${visuals.textColor} opacity-90`}>
-            {weather.condition}
-          </p>
-        </div>
-        <div
-          className={`flex items-center gap-1 text-3xl font-bold ${visuals.textColor}`}
-        >
-          <Thermometer
-            className={`w-7 h-7 ${tempColor} transition-colors duration-1000`}
-          />
-          {weather.temperature}°C
-        </div>
+      <div className="flex-grow flex items-center justify-center">
+        {overrideWeather ? (
+          // If overrideWeather is provided, render it directly
+          renderWeatherContent(overrideWeather)
+        ) : loading ? (
+          // Otherwise, show loading state
+          <div className="flex flex-col items-center justify-center h-full text-center space-y-2">
+            <Loader2 className="animate-spin" size={48} />
+            <p className="text-lg opacity-80">Loading...</p>
+          </div>
+        ) : (
+          // Or render the fetched weather
+          renderWeatherContent(weather)
+        )}
       </div>
-
-      <p className={`mt-4 text-sm ${visuals.impactColor} italic`}>{impact}</p>
     </div>
   );
-}
+};
+
+export default WeatherWidget;

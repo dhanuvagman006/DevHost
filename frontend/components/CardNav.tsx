@@ -13,8 +13,7 @@ import { FaUser } from "react-icons/fa";
 import LanguageSwitcher from "./LanguageSwitcher";
 import LocationSwitcher from "./LocationSwitcher";
 
-// --- 1. ADD THE LOCATION TYPE ---
-// This type is needed for the props interface below
+// --- Types are still needed for internal definitions ---
 type Location = {
   name: string;
   flag: string;
@@ -33,48 +32,62 @@ export type CardNavItem = {
   links: CardNavLink[];
 };
 
-// --- 2. UPDATE THE PROPS INTERFACE ---
+// --- 1. SIMPLIFY PROPS ---
+// Most props are removed, as they will be defined inside
 export interface CardNavProps {
-  logo: string;
-  logoAlt?: string;
-  items: CardNavItem[];
   className?: string;
   ease?: string;
   baseColor?: string;
   menuColor?: string;
   buttonBgColor?: string;
   buttonTextColor?: string;
-
-  // --- Add these four props ---
-  isLocationSwitcherOpen: boolean;
-  onToggleLocationSwitcher: () => void;
-  selectedLocation: Location;
-  onLocationChange: (location: Location) => void;
 }
 
+// --- 2. UPDATE COMPONENT SIGNATURE & PROVIDE DEFAULTS ---
 const CardNav: React.FC<CardNavProps> = ({
-  logo,
-  logoAlt = "Logo",
-  items,
   className = "",
   ease = "power3.out",
   baseColor = "#fff",
   menuColor,
-  buttonBgColor,
-  buttonTextColor,
-
-  // --- 3. DESTRUCTURE THE NEW PROPS ---
-  isLocationSwitcherOpen,
-  onToggleLocationSwitcher,
-  selectedLocation,
-  onLocationChange,
+  buttonBgColor = "#f0f0f0", // Added default
+  buttonTextColor = "#000", // Added default
 }) => {
+  // --- 3. DEFINE DATA/CONTENT INTERNALLY ---
+  const logo = "/logo.svg"; // Example path, replace with your actual logo path
+  const logoAlt = "Company Logo";
+  const items: CardNavItem[] = [
+    {
+      label: "Dashboard",
+      bgColor: "#f4f4f5", // zinc-100
+      textColor: "#18181b", // zinc-900
+      links: [{ label: "Go to Dashboard", href: "/dashboard", ariaLabel: "Go to Dashboard" }],
+    },
+    {
+      label: "Billing",
+      bgColor: "#dcfce7", // green-100
+      textColor: "#166534", // green-800
+      links: [{ label: "Manage Billing", href: "/billing", ariaLabel: "Manage Billing" }],
+    },
+    {
+      label: "Supply Chain",
+      bgColor: "#dbeafe", // blue-100
+      textColor: "#1e40af", // blue-800
+      links: [{ label: "Contact Support", href: "/support", ariaLabel: "Contact Support" }],
+    },
+  ];
+
+  // --- 4. DEFINE STATE INTERNALLY ---
+  const [isLocationSwitcherOpen, setIsLocationSwitcherOpen] = useState(false);
+  const [selectedLocation, setSelectedLocation] = useState<Location>({
+    name: "Global",
+    flag: "🌍",
+  });
+  
   const [isHamburgerOpen, setIsHamburgerOpen] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
-
-  const [activeDropdown, setActiveDropdown] = useState<
-    "location" | "language" | null
-  >(null);
+  
+  // This state is now only for the language switcher
+  const [activeDropdown, setActiveDropdown] = useState<"language" | null>(null);
 
   const navRef = useRef<HTMLDivElement | null>(null);
   const cardsRef = useRef<HTMLDivElement[]>([]);
@@ -84,45 +97,41 @@ const CardNav: React.FC<CardNavProps> = ({
   const locationRef = useRef<HTMLDivElement | null>(null);
   const languageRef = useRef<HTMLDivElement | null>(null);
 
-  // Handlers to toggle dropdowns
-  const toggleLocation = () => {
-    setActiveDropdown(activeDropdown === "location" ? null : "location");
+  // --- 5. DEFINE STATE HANDLERS INTERNALLY ---
+  const onToggleLocationSwitcher = () => {
+    setIsLocationSwitcherOpen((prev) => !prev);
+  };
+
+  const onLocationChange = (location: Location) => {
+    setSelectedLocation(location);
+    setIsLocationSwitcherOpen(false); // Close dropdown on selection
   };
 
   const toggleLanguage = () => {
     setActiveDropdown(activeDropdown === "language" ? null : "language");
   };
-//const router = useRouter(); // 2. Initialize the router
 
-  // 3. Create a function to handle the navigation
   const handleNavigate = () => {
-    router.push("/profile"); // 4. Use router.push() to navigate
+    router.push("/profile");
   };
 
   // Click-outside listener
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      // Check if the click is outside the location switcher *and* its dropdown
+      // Check for clicks outside the location switcher
       const isOutsideLocation =
-        activeDropdown === "location" &&
+        isLocationSwitcherOpen &&
         locationRef.current &&
         !locationRef.current.contains(event.target as Node);
 
-      // Check if the click is outside the language switcher *and* its dropdown
+      // Check for clicks outside the language switcher
       const isOutsideLanguage =
         activeDropdown === "language" &&
         languageRef.current &&
         !languageRef.current.contains(event.target as Node);
 
-      // Also check the dashboard's location toggle button
-      // We can use the passed-in `isLocationSwitcherOpen` prop to infer
-      if (
-        isLocationSwitcherOpen &&
-        locationRef.current &&
-        !locationRef.current.contains(event.target as Node)
-      ) {
-        // Call the parent's toggle function to close it
-        onToggleLocationSwitcher(); 
+      if (isOutsideLocation) {
+        onToggleLocationSwitcher(); // Use internal handler
       }
 
       if (isOutsideLanguage) {
@@ -134,12 +143,10 @@ const CardNav: React.FC<CardNavProps> = ({
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-    // Updated dependencies
-  }, [activeDropdown, isLocationSwitcherOpen, onToggleLocationSwitcher]);
+    // Dependencies are now internal state/handlers
+  }, [activeDropdown, isLocationSwitcherOpen]);
 
-
-  // ... (rest of your existing code for calculateHeight, createTimeline, etc.) ...
-  // ... (no changes needed in the layout effects or toggleMenu) ...
+  // ... (calculateHeight, createTimeline, etc. remain unchanged) ...
   const calculateHeight = () => {
     const navEl = navRef.current;
     if (!navEl) return 64;
@@ -205,7 +212,7 @@ const CardNav: React.FC<CardNavProps> = ({
       tl?.kill();
       tlRef.current = null;
     };
-  }, [ease, items]);
+  }, [ease]); // Removed 'items' as it's a stable internal constant
 
   useLayoutEffect(() => {
     const handleResize = () => {
@@ -248,6 +255,7 @@ const CardNav: React.FC<CardNavProps> = ({
     }
   };
 
+
   const setCardRef = (i: number) => (el: HTMLDivElement | null) => {
     if (el) cardsRef.current[i] = el;
   };
@@ -256,15 +264,14 @@ const CardNav: React.FC<CardNavProps> = ({
     <div
       className={`card-nav-container relative left-1/2 -translate-x-1/2 w-[90%] max-w-[850px] z-[99] top-[1.2em] md:top-[2em] ${className}`}
     >
-      {/* --- Location Div (NOW A COMPONENT) --- */}
+      {/* --- LocationSwitcher now uses internal state --- */}
       <div
         className="absolute right-full top-1/2 -translate-y-1/2 mr-8"
         ref={locationRef}
       >
-        
         <LocationSwitcher
-          isOpen={isLocationSwitcherOpen}
-          onToggle={onToggleLocationSwitcher}
+          isOpen={false}
+          onToggle={() => {}}
           selectedLocation={selectedLocation}
           onLocationChange={onLocationChange}
         />
@@ -302,18 +309,22 @@ const CardNav: React.FC<CardNavProps> = ({
             />
           </div>
 
+          {/* --- Logo now uses internal data --- */}
           <div className="logo-container flex items-center md:absolute md:left-1/2 md:top-1/2 md:-translate-x-1/2 md:-translate-y-1/2 order-1 md:order-none">
-            <img src={logo} alt={logoAlt} className="logo h-[32px]" />
+            <a href="/dashboard" aria-label="Go to Dashboard">
+              <img src={logo} alt={logoAlt} className="logo h-[32px]" />
+            </a>
           </div>
 
           {/* <button
-            type="button"
-            className="card-nav-cta-button hidden md:inline-flex border-0 rounded-[calc(0.75rem-0.2rem)] px-4 items-center h-full font-medium cursor-pointer transition-colors duration-300"
-            style={{ backgroundColor: buttonBgColor, color: buttonTextColor }}
-            onClick={() => router.push("/billing")}
-          >
-            Go to Billing
-          </button> */}
+             type="button"
+             className="card-nav-cta-button hidden md:inline-flex border-0 rounded-[calc(0.75rem-0.2rem)] px-4 items-center h-full font-medium cursor-pointer transition-colors duration-300"
+             style={{ backgroundColor: buttonBgColor, color: buttonTextColor }}
+             onClick={() => router.push("/billing")}
+           >
+             Go to Billing
+           </button>
+           */}
         </div>
 
         <div
@@ -324,6 +335,7 @@ const CardNav: React.FC<CardNavProps> = ({
           } md:flex-row md:items-stretch md:gap-[12px]`}
           aria-hidden={!isExpanded}
         >
+          {/* --- Items now uses internal data --- */}
           {(items || []).slice(0, 3).map((item, idx) => (
             <div
               key={`${item.label}-${idx}`}
@@ -357,11 +369,11 @@ const CardNav: React.FC<CardNavProps> = ({
       <div className="absolute left-full top-1/2 -translate-y-1/2 ml-4 flex items-center gap-4">
         {/* Profile Button */}
         <div
-      className="hidden md:flex items-center justify-center w-11 h-11 bg-white text-gray-900 rounded-full cursor-pointer shadow-md transition-all duration-300 ease-in-out hover:bg-gray-100 hover:scale-110"
-      onClick={handleNavigate} // 5. Call your function on click
-    >
-      <FaUser size={20} />
-    </div>
+          className="hidden md:flex items-center justify-center w-11 h-11 bg-white text-gray-900 rounded-full cursor-pointer shadow-md transition-all duration-300 ease-in-out hover:bg-gray-100 hover:scale-110"
+          onClick={handleNavigate}
+        >
+          <FaUser size={20} />
+        </div>
 
         {/* Language Switcher */}
         <div ref={languageRef}>

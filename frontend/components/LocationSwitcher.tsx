@@ -1,97 +1,96 @@
+// components/LanguageSwitcher.tsx
 "use client";
-import React from "react";
-import { IoLocationOutline } from "react-icons/io5";
-import Flag from "react-world-flags"; // --- 1. Import the Flag component ---
 
-// --- LOCATION DATA (isoCode is used by react-world-flags) ---
-const nordicLocations = [
-  { name: "Sweden", isoCode: "se" },
-  { name: "Finland", isoCode: "fi" },
-  { name: "Norway", isoCode: "no" },
-  { name: "Denmark", isoCode: "dk" },
-  { name: "Iceland", isoCode: "is" },
-];
+import { useState, useRef, useEffect } from "react";
+import { useLocale } from "next-intl";
+import ReactCountryFlag from "react-country-flag";
+import { ChevronDown, MapPin } from "lucide-react";
 
-// --- TYPE FOR LOCATION (unchanged) ---
-type Location = {
-  name: string;
-  isoCode: string;
-} | null;
-
-// --- PROPS (unchanged) ---
-interface LocationSwitcherProps {
-  isOpen: boolean;
-  onToggle: () => void;
-  selectedLocation: Location;
-  onLocationChange: (location: Location) => void;
-}
-
-const LocationSwitcher: React.FC<LocationSwitcherProps> = ({
-  isOpen,
-  onToggle,
-  selectedLocation,
-  onLocationChange,
-}) => {
-  return (
-    <div className="relative">
-      {/* Visible Button */}
-      <div
-        className="hidden md:flex items-center gap-2 cursor-pointer bg-white text-gray-900 px-4 py-2 rounded-lg shadow-md transition-all duration-300 ease-in-out hover:bg-gray-100 hover:scale-110"
-        onClick={onToggle}
-      >
-        {selectedLocation ? (
-          // --- 2. Use the Flag component ---
-          <Flag
-            code={selectedLocation.isoCode}
-            width="20" // Set width
-            className="rounded-sm"
-          />
-        ) : (
-          <IoLocationOutline size={20} />
-        )}
-        <span className="text-base font-medium">
-          {selectedLocation ? selectedLocation.name : "Location"}
-        </span>
-      </div>
-
-      {/* Dropdown Menu */}
-      {isOpen && (
-        <div className="absolute top-full right-0 mt-2 min-w-full bg-white rounded-lg shadow-lg overflow-hidden z-10">
-          {nordicLocations.map((loc) => (
-            <div
-              key={loc.name}
-              className="flex items-center gap-3 px-4 py-2 cursor-pointer hover:bg-gray-100 whitespace-nowrap text-black"
-              onClick={() => {
-                onLocationChange(loc);
-                // onToggle(); // Parent controls closing
-              }}
-            >
-              {/* --- 3. Use the Flag component in the loop --- */}
-              <Flag
-                code={loc.isoCode}
-                width="20" // Set width
-                className="rounded-sm"
-              />
-              <span className="text-base font-medium p-2">{loc.name}</span>
-            </div>
-          ))}
-          {/* Reset button */}
-          {selectedLocation && (
-            <div
-              className="flex items-center gap-3 px-4 py-2 cursor-pointer hover:bg-gray-100 border-t text-black"
-              onClick={() => {
-                onLocationChange(null);
-                // onToggle(); // Parent controls closing
-              }}
-            >
-              <IoLocationOutline size={20} />
-              <span className="text-base font-medium">Location</span>
-            </div>
-          )}
-        </div>
-      )}
-    </div>
-  );
+// Supported locales + their default locations
+const localeConfig = {
+  da: { code: "DK", name: "Dansk", location: "Copenhagen, Denmark" },
+  en: { code: "US", name: "English", location: "Copenhagen, Denmark" }, // fallback still Denmark
+  sv: { code: "SE", name: "Svenska", location: "Copenhagen, Denmark" },
+  no: { code: "NO", name: "Norsk", location: "Copenhagen, Denmark" },
+  fi: { code: "FI", name: "Suomi", location: "Copenhagen, Denmark" },
 };
 
-export default LocationSwitcher;
+export default function LanguageSwitcher() {
+  const [isOpen, setIsOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const locale = useLocale();
+
+  // ✅ Default fallback: Denmark
+  const currentLocaleData =
+    localeConfig[locale as keyof typeof localeConfig] || localeConfig["da"];
+
+  // Close dropdown when clicked outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const handleLanguageChange = (newLocale: string) => {
+    console.log("Change language to:", newLocale);
+    setIsOpen(false);
+  };
+
+  return (
+    <div className="relative flex items-center space-x-3" ref={dropdownRef}>
+      {/* Location with Icon */}
+      <div className="flex items-center text-gray-300">
+        <MapPin className="h-4 w-4 mr-1 text-blue-400" />
+        <span className="text-sm">{currentLocaleData.location}</span>
+      </div>
+
+      {/* Language Selector */}
+      <div className="relative">
+        <button
+          onClick={() => setIsOpen(!isOpen)}
+          className="flex items-center justify-center p-2 rounded-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500"
+          aria-label="Select language"
+        >
+          <ReactCountryFlag
+            countryCode="DK"
+            svg
+            style={{ width: "1.5em", height: "1.5em" }}
+            title={locale.toUpperCase()}
+          />
+          <ChevronDown
+            className={`h-4 w-4 ml-1 transition-transform ${isOpen ? "rotate-180" : "rotate-0"}`}
+          />
+        </button>
+
+        {isOpen && (
+          <div className="absolute right-0 mt-2 w-48 bg-gray-800 rounded-md shadow-lg py-1 z-50">
+            {Object.keys(localeConfig)
+              .filter((key) => key !== locale)
+              .map((key) => {
+                const { code, name } = localeConfig[key as keyof typeof localeConfig];
+                return (
+                  <button
+                    key={key}
+                    onClick={() => handleLanguageChange(key)}
+                    className="flex items-center w-full text-left px-4 py-2 text-sm text-gray-800 hover:bg-gray-700"
+                  >
+                    <ReactCountryFlag
+                      countryCode={code}
+                      svg
+                      style={{ width: "1.25em", height: "1.25em" }}
+                      className="mr-3"
+                    />
+                    {name}
+                  </button>
+                );
+              })}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}

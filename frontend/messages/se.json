@@ -1,0 +1,74 @@
+{
+  "Dashboard": {
+    "title": "Instrumentpanel",
+    "loadingUserData": "Laddar användardata...",
+    "nav": {
+      "about": "Om",
+      "company": "Företag",
+      "aboutCompany": "Om företaget",
+      "careers": "Karriär",
+      "aboutCareers": "Om karriär",
+      "billing": "Fakturering",
+      "featuredProjects": "Utvalda projekt",
+      "distributors": "Distributörer",
+      "email": "E-post",
+      "emailUs": "Maila oss",
+      "twitter": "Twitter",
+      "linkedin": "LinkedIn"
+    }
+  },
+  "AnalyticsTable": {
+    "title": "Nyckeltal",
+    "loading": "Laddar analyser...",
+    "errorPrefix": "Fel: ",
+    "errorNoUserId": "Inget användar-ID angivet.",
+    "changeSuffix": "från förra månaden",
+    "totalRevenue": "Totala intäkter",
+    "newCustomers": "Nya kunder",
+    "conversionRate": "Konverteringsgrad",
+    "avgOrderValue": "Gen. ordervärde"
+  },
+  "InventoryTable": {
+    "loading": "Laddar lager...",
+    "errorTitle": "Fel: Kunde inte hämta lager",
+    "retry": "Försök igen",
+    "title": "Nuvarande lager",
+    "itemCount": "{count, plural, one {# artikel} other {# artiklar}}",
+    "header": {
+      "productName": "Produktnamn",
+      "country": "Land",
+      "quantity": "Antal",
+      "price": "Pris",
+      "month": "Månad"
+    },
+    "empty": {
+      "message": "Inga artiklar i lager",
+      "prompt": "Lägg till artiklar med formuläret till höger"
+    }
+  },
+  "InventoryAlerts": {
+    "title": "Lagervarningar",
+    "lowStock": "Lågt lagersaldo",
+    "expiringSoon": "Utgår snart",
+    "quantity": "Antal: {level}",
+    "viewAll": "Visa hela lagret"
+  },
+  "components": {
+    "TopTable": {
+      "title": "Regionala toppsäljare",
+      "loading": "Laddar regional data...",
+      "error": "Fel: Kunde inte hämta regional data",
+      "retry": "Försök igen",
+      "empty": {
+        "title": "Ingen regional data tillgänglig",
+        "subtitle": "Data från närliggande återförsäljare"
+      },
+      "headers": {
+        "product": "Produkt",
+        "totalSales": "Total försäljning",
+        "avgPrice": "Genomsnittspris",
+        "retailers": "Återförsäljare"
+      }
+    }
+  }
+}

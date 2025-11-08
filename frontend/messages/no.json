@@ -1,0 +1,74 @@
+{
+  "Dashboard": {
+    "title": "Dashbord",
+    "loadingUserData": "Laster brukerdata...",
+    "nav": {
+      "about": "Om",
+      "company": "Selskap",
+      "aboutCompany": "Om selskapet",
+      "careers": "Karriere",
+      "aboutCareers": "Om karriere",
+      "billing": "Fakturering",
+      "featuredProjects": "Utvalgte prosjekter",
+      "distributors": "Distributører",
+      "email": "E-post",
+      "emailUs": "Send oss en e-post",
+      "twitter": "Twitter",
+      "linkedin": "LinkedIn"
+    }
+  },
+  "AnalyticsTable": {
+    "title": "Nøkkeltall",
+    "loading": "Laster inn analyse...",
+    "errorPrefix": "Feil: ",
+    "errorNoUserId": "Ingen bruker-ID oppgitt.",
+    "changeSuffix": "fra forrige måned",
+    "totalRevenue": "Totale inntekter",
+    "newCustomers": "Nye kunder",
+    "conversionRate": "Konverteringsrate",
+    "avgOrderValue": "Gj.sn. ordreverdi"
+  },
+  "InventoryTable": {
+    "loading": "Laster inn lager...",
+    "errorTitle": "Feil: Kunne ikke hente lager",
+    "retry": "Prøv på nytt",
+    "title": "Nåværende lager",
+    "itemCount": "{count, plural, one {# vare} other {# varer}}",
+    "header": {
+      "productName": "Produktnavn",
+      "country": "Land",
+      "quantity": "Antall",
+      "price": "Pris",
+      "month": "Måned"
+    },
+    "empty": {
+      "message": "Ingen varer på lager",
+      "prompt": "Legg til varer ved å bruke skjemaet til høyre"
+    }
+  },
+  "InventoryAlerts": {
+    "title": "Lagervarsler",
+    "lowStock": "Lite på lager",
+    "expiringSoon": "Utløper snart",
+    "quantity": "Antall: {level}",
+    "viewAll": "Se hele lagerbeholdningen"
+  },
+  "components": {
+    "TopTable": {
+      "title": "Regionale toselgere",
+      "loading": "Laster regionale data...",
+      "error": "Feil: Kunne ikke hente regionale data",
+      "retry": "Prøv på nytt",
+      "empty": {
+        "title": "Ingen regionale data tilgjengelig",
+        "subtitle": "Data fra nærliggende forhandlere"
+      },
+      "headers": {
+        "product": "Produkt",
+        "totalSales": "Totalt salg",
+        "avgPrice": "Gj.sn. pris",
+        "retailers": "Forhandlere"
+      }
+    }
+  }
+}

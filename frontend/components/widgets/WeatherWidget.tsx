@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Sun,
   Cloud,
@@ -123,9 +123,8 @@ const WeatherWidget: React.FC<WeatherWidgetProps> = ({
   const renderWeatherContent = (data: WeatherData | null) => {
     if (!data) {
       return (
-        <div className="flex flex-col items-center justify-center h-full text-center">
-          <p className="text-lg opacity-80">No weather data.</p>
-          <p className="text-sm opacity-60">Select a location.</p>
+        <div className="flex flex-col items-center justify-center h-full text-center text-gray-400">
+          <p className="text-sm">No data available</p>
         </div>
       );
     }
@@ -133,47 +132,55 @@ const WeatherWidget: React.FC<WeatherWidgetProps> = ({
     return (
       <div className="flex flex-col items-center justify-between h-full text-center space-y-4">
         {/* Icon */}
-        <div className="text-white opacity-90 pt-4">{data.icon}</div>
+        <div className="text-[#00C7BE] pt-2 transform scale-110 drop-shadow-sm">{data.icon}</div>
 
         {/* Main Info */}
         <div className="text-center">
-          <p className="text-6xl font-extrabold">{data.temperature}°C</p>
-          <p className="text-xl capitalize opacity-80">{data.description}</p>
+          <p className="text-6xl font-light text-[#1D1D1F] tracking-tighter">{data.temperature}°</p>
+          <p className="text-base font-medium text-gray-500 capitalize">{data.description}</p>
         </div>
 
         {/* Extra Info */}
-        <div className="pb-4">
-          <p className="text-sm opacity-70">
-            Wind: {data.windspeed} km/h
-          </p>
+        <div className="pb-2">
+          <div className="inline-flex items-center gap-2 px-3 py-1 bg-gray-50 rounded-full">
+            <Wind size={14} className="text-gray-400" />
+            <p className="text-xs font-medium text-gray-500">
+              {data.windspeed} km/h
+            </p>
+          </div>
         </div>
       </div>
     );
   };
 
   return (
-    <div className="p-6 text-white bg-gradient-to-br from-blue-500 to-indigo-700 rounded-2xl shadow-lg w-full max-w-xs mx-auto min-h-[360px] flex flex-col">
-      <h3 className="text-2xl font-bold mb-4 text-center text-white/90 flex-shrink-0">
+    <div className="flex flex-col items-center justify-center h-full w-full">
+      <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-widest mb-4">
         {overrideWeather ? "Demo Mode" : locationName || "Nordic Weather"}
       </h3>
 
-      <div className="flex-grow flex items-center justify-center">
+      <div className="flex-grow flex items-center justify-center w-full">
         {overrideWeather ? (
-          // If overrideWeather is provided, render it directly
           renderWeatherContent(overrideWeather)
         ) : loading ? (
-          // Otherwise, show loading state
-          <div className="flex flex-col items-center justify-center h-full text-center space-y-2">
-            <Loader2 className="animate-spin" size={48} />
-            <p className="text-lg opacity-80">Loading...</p>
+          <div className="flex flex-col items-center justify-center text-center space-y-2 text-gray-400">
+            <Loader2 className="animate-spin" size={32} />
+            <p className="text-xs">Loading...</p>
           </div>
         ) : (
-          // Or render the fetched weather
           renderWeatherContent(weather)
         )}
       </div>
     </div>
   );
 };
+
+// Override renderContent helper style as well (since it had text-white)
+// We need to inject the style changes inside the helper or just assume the parent handles it? 
+// The helper was inside the component scope, so I can update it here.
+// But wait, the previous tool call covered the *return statement*, did it cover the helper function definition?
+// I should update the *entire component body* or at least the helper function + return.
+// Let's verify if I can update the helper function in this block. Yes, the logical place is the `renderWeatherContent` function.
+
 
 export default WeatherWidget;

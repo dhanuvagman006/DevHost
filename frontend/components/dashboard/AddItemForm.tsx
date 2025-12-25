@@ -47,7 +47,7 @@ export function AddItemForm({ userId: propUserId, onItemAdded }: Props) {
     setMessage('');
     setIsLoading(true);
     setIsSuccess(false);
-    
+
     try {
       // Get userId from props or localStorage
       const userId = propUserId || getUserId();
@@ -70,11 +70,11 @@ export function AddItemForm({ userId: propUserId, onItemAdded }: Props) {
       console.log('📦 Adding item:', itemData);
       const response = await api.addItem(userId, itemData);
       await response.json();
-      
+
       console.log('✅ Item added successfully');
       setMessage(t('successMessage')); // Translated message
       setIsSuccess(true);
-      
+
       // Reset form
       setProductName('');
       setQuantity('');
@@ -85,18 +85,18 @@ export function AddItemForm({ userId: propUserId, onItemAdded }: Props) {
       setCurrentPrice('');
       setSales('');
       setExpiryDate('');
-      
+
       // Call callback if provided
       if (onItemAdded) {
         onItemAdded();
       }
-      
+
       // Clear success message after 3 seconds
       setTimeout(() => {
         setMessage('');
         setIsSuccess(false);
       }, 3000);
-      
+
     } catch (error) {
       console.error('❌ Error adding item:', error);
       setMessage(error instanceof Error ? error.message : t('errorMessage')); // Translated message
@@ -106,15 +106,14 @@ export function AddItemForm({ userId: propUserId, onItemAdded }: Props) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md space-y-4">
-      <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{t('title')}</h3>
-        <div className="text-2xl">📦</div>
+    <form onSubmit={handleSubmit} className="space-y-5">
+      <div className="flex items-center justify-between pb-2 border-b border-gray-100/50">
+        <h3 className="text-base font-semibold text-[#1D1D1F]">{t('title')}</h3>
       </div>
-      
+
       {/* Product Name */}
       <div>
-        <label htmlFor="productName" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+        <label htmlFor="productName" className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5 ml-1">
           {t('productNameLabel')}
         </label>
         <input
@@ -122,7 +121,7 @@ export function AddItemForm({ userId: propUserId, onItemAdded }: Props) {
           id="productName"
           value={productName}
           onChange={(e) => setProductName(e.target.value)}
-          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:border-blue-500 focus:ring-blue-500"
+          className="block w-full rounded-xl border-none bg-[#F5F5F7] px-4 py-3 text-sm text-[#1D1D1F] placeholder:text-gray-400 focus:ring-2 focus:ring-[#007AFF]/20 transition-all outline-none"
           placeholder={t('productNamePlaceholder')}
           required
         />
@@ -131,48 +130,58 @@ export function AddItemForm({ userId: propUserId, onItemAdded }: Props) {
       {/* Country and Month */}
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label htmlFor="country" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+          <label htmlFor="country" className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5 ml-1">
             {t('countryLabel')}
           </label>
-          <select
-            id="country"
-            value={country}
-            onChange={(e) => setCountry(e.target.value)}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:border-blue-500 focus:ring-blue-500"
-            required
-          >
-            {nordicCountries.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
+          <div className="relative">
+            <select
+              id="country"
+              value={country}
+              onChange={(e) => setCountry(e.target.value)}
+              className="block w-full rounded-xl border-none bg-[#F5F5F7] px-4 py-3 text-sm text-[#1D1D1F] focus:ring-2 focus:ring-[#007AFF]/20 transition-all outline-none appearance-none"
+              required
+            >
+              {nordicCountries.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-gray-500">
+              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+            </div>
+          </div>
         </div>
         <div>
-          <label htmlFor="month" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+          <label htmlFor="month" className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5 ml-1">
             {t('monthLabel')}
           </label>
-          <select
-            id="month"
-            value={month}
-            onChange={(e) => setMonth(e.target.value)}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:border-blue-500 focus:ring-blue-500"
-            required
-          >
-            <option value="">{t('monthPlaceholder')}</option>
-            {months.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
+          <div className="relative">
+            <select
+              id="month"
+              value={month}
+              onChange={(e) => setMonth(e.target.value)}
+              className="block w-full rounded-xl border-none bg-[#F5F5F7] px-4 py-3 text-sm text-[#1D1D1F] focus:ring-2 focus:ring-[#007AFF]/20 transition-all outline-none appearance-none"
+              required
+            >
+              <option value="">{t('monthPlaceholder')}</option>
+              {months.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-gray-500">
+              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+            </div>
+          </div>
         </div>
       </div>
 
       {/* Quantity and Sales */}
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label htmlFor="quantity" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+          <label htmlFor="quantity" className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5 ml-1">
             {t('quantityLabel')}
           </label>
           <input
@@ -180,13 +189,13 @@ export function AddItemForm({ userId: propUserId, onItemAdded }: Props) {
             id="quantity"
             value={quantity}
             onChange={(e) => setQuantity(e.target.value)}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:border-blue-500 focus:ring-blue-500"
+            className="block w-full rounded-xl border-none bg-[#F5F5F7] px-4 py-3 text-sm text-[#1D1D1F] focus:ring-2 focus:ring-[#007AFF]/20 transition-all outline-none"
             min="0"
             required
           />
         </div>
         <div>
-          <label htmlFor="sales" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+          <label htmlFor="sales" className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5 ml-1">
             {t('salesLabel')}
           </label>
           <input
@@ -194,7 +203,7 @@ export function AddItemForm({ userId: propUserId, onItemAdded }: Props) {
             id="sales"
             value={sales}
             onChange={(e) => setSales(e.target.value)}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:border-blue-500 focus:ring-blue-500"
+            className="block w-full rounded-xl border-none bg-[#F5F5F7] px-4 py-3 text-sm text-[#1D1D1F] focus:ring-2 focus:ring-[#007AFF]/20 transition-all outline-none"
             min="0"
             placeholder={t('salesPlaceholder')}
           />
@@ -204,7 +213,7 @@ export function AddItemForm({ userId: propUserId, onItemAdded }: Props) {
       {/* Pricing */}
       <div className="grid grid-cols-3 gap-4">
         <div>
-          <label htmlFor="costPrice" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+          <label htmlFor="costPrice" className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5 ml-1">
             {t('costPriceLabel')}
           </label>
           <input
@@ -213,13 +222,13 @@ export function AddItemForm({ userId: propUserId, onItemAdded }: Props) {
             step="0.01"
             value={costPrice}
             onChange={(e) => setCostPrice(e.target.value)}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:border-blue-500 focus:ring-blue-500"
+            className="block w-full rounded-xl border-none bg-[#F5F5F7] px-4 py-3 text-sm text-[#1D1D1F] focus:ring-2 focus:ring-[#007AFF]/20 transition-all outline-none"
             min="0"
-            placeholder={t('pricePlaceholder')}
+            placeholder="0.00"
           />
         </div>
         <div>
-          <label htmlFor="sellingPrice" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+          <label htmlFor="sellingPrice" className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5 ml-1">
             {t('sellingPriceLabel')}
           </label>
           <input
@@ -228,13 +237,13 @@ export function AddItemForm({ userId: propUserId, onItemAdded }: Props) {
             step="0.01"
             value={sellingPrice}
             onChange={(e) => setSellingPrice(e.target.value)}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:border-blue-500 focus:ring-blue-500"
+            className="block w-full rounded-xl border-none bg-[#F5F5F7] px-4 py-3 text-sm text-[#1D1D1F] focus:ring-2 focus:ring-[#007AFF]/20 transition-all outline-none"
             min="0"
-            placeholder={t('pricePlaceholder')}
+            placeholder="0.00"
           />
         </div>
         <div>
-          <label htmlFor="currentPrice" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+          <label htmlFor="currentPrice" className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5 ml-1">
             {t('currentPriceLabel')}
           </label>
           <input
@@ -243,16 +252,16 @@ export function AddItemForm({ userId: propUserId, onItemAdded }: Props) {
             step="0.01"
             value={currentPrice}
             onChange={(e) => setCurrentPrice(e.target.value)}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:border-blue-500 focus:ring-blue-500"
+            className="block w-full rounded-xl border-none bg-[#F5F5F7] px-4 py-3 text-sm text-[#1D1D1F] focus:ring-2 focus:ring-[#007AFF]/20 transition-all outline-none"
             min="0"
-            placeholder={t('pricePlaceholder')}
+            placeholder="0.00"
           />
         </div>
       </div>
 
       {/* Expiry Date */}
       <div>
-        <label htmlFor="expiryDate" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+        <label htmlFor="expiryDate" className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5 ml-1">
           {t('expiryDateLabel')}
         </label>
         <input
@@ -260,14 +269,14 @@ export function AddItemForm({ userId: propUserId, onItemAdded }: Props) {
           id="expiryDate"
           value={expiryDate}
           onChange={(e) => setExpiryDate(e.target.value)}
-          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:border-blue-500 focus:ring-blue-500"
+          className="block w-full rounded-xl border-none bg-[#F5F5F7] px-4 py-3 text-sm text-[#1D1D1F] focus:ring-2 focus:ring-[#007AFF]/20 transition-all outline-none"
         />
       </div>
 
       <button
         type="submit"
         disabled={isLoading}
-        className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+        className="w-full px-4 py-3.5 bg-[#1D1D1F] text-white rounded-full font-medium text-sm hover:bg-black hover:shadow-lg active:scale-[0.98] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed mt-4"
       >
         {isLoading ? (
           <div className="flex items-center justify-center space-x-2">
@@ -278,13 +287,12 @@ export function AddItemForm({ userId: propUserId, onItemAdded }: Props) {
           t('buttonText')
         )}
       </button>
-      
+
       {message && (
-        <div className={`text-sm text-center p-2 rounded ${
-          isSuccess 
-            ? 'text-green-600 bg-green-50 dark:text-green-400 dark:bg-green-900/20' 
-            : 'text-red-600 bg-red-50 dark:text-red-400 dark:bg-red-900/20'
-        }`}>
+        <div className={`text-xs font-medium text-center p-3 rounded-xl ${isSuccess
+            ? 'text-green-700 bg-green-50'
+            : 'text-red-700 bg-red-50'
+          }`}>
           {message}
         </div>
       )}

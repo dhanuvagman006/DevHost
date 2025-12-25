@@ -4,251 +4,184 @@
 import { useState, useEffect } from 'react';
 import { getUserId, getUserInfo } from '@/lib/api';
 import { useTranslations } from 'next-intl';
-// --- REMOVED MagicBento imports ---
-// import MagicBento, { MagicBentoCard } from '@/components/MagicBento';
+import Aurora from "@/components/Aurora";
 
-//import { Navbar } from '@/components/layout/Navbar';
-import { ChartCard } from '@/components/ui/ChartCard';
 import WeatherWidget from '@/components/widgets/WeatherWidget';
 import { InventoryAlerts } from '@/components/widgets/InventoryAlerts';
 import CardNav from '@/components/CardNav';
 
-// --- NEWLY IMPORTED COMPONENTS ---
 import { AddItemForm } from '@/components/dashboard/AddItemForm';
 import { InventoryTable } from '@/components/dashboard/InventoryTable';
 import { AddAgentForm } from '@/components/dashboard/AddAgentForm';
-import { AgentsList } from '@/components/dashboard/AgentsList';
-import { BillingForm } from '@/components/dashboard/BillingForm';
 import { DynamicPricingForm } from '@/components/dashboard/DynamicPricingForm';
 import { ForecastForm } from '@/components/dashboard/ForecastForm';
 import { AnalyticsTable } from '@/components/dashboard/AnalyticsTable';
 import { TopSoldLastYear } from '@/components/dashboard/TopSoldLastYear';
 import { RegionalTopTable } from '@/components/dashboard/RegionalTopTable';
-import { ReplenishmentChecker } from '@/components/dashboard/ReplenishmentChecker';
-// --- END NEW IMPORTS ---
 
-// --- Mock Data ---
-const salesForecastData = [
-  { name: 'Mon', total: 4000 },
-  { name: 'Tue', total: 3000 },
-  { name: 'Wed', total: 2000 },
-  { name: 'Thu', total: 2780 },
-  { name: 'Fri', total: 1890 },
-  { name: 'Sat', total: 2390 },
-  { name: 'Sun', total: 3490 },
-];
+// --- REUSABLE GLASS CARD COMPONENT ---
+const GlassCard = ({ children, className = "" }: { children: React.ReactNode, className?: string }) => (
+  <div className={`relative w-full rounded-[2rem] overflow-hidden bg-white/80 backdrop-blur-2xl shadow-[0_4px_24px_rgba(0,0,0,0.02)] border border-white/50 hover:shadow-[0_8px_32px_rgba(0,0,0,0.04)] hover:bg-white/90 transition-all duration-500 ease-out ${className}`}>
+    {children}
+  </div>
+);
 
-const pricingSuggestionData = [
-  { name: 'Apples', total: 2.99 },
-  { name: 'Oranges', total: 3.49 },
-  { name: 'Bananas', total: 0.79 },
-  { name: 'Grapes', total: 5.99 },
-  { name: 'Milk', total: 4.29 },
-];
-// --- End Mock Data ---
+const SectionTitle = ({ children }: { children: React.ReactNode }) => (
+  <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-3 ml-2">
+    {children}
+  </h3>
+);
 
 export default function DashboardPage() {
   const t = useTranslations('Dashboard');
 
-  // --- MODIFIED: CardNav items now use t() function ---
-  const items = [
-    {
-      label: t('nav.about'),
-      bgColor: 'var(--color-bg-surface)',
-      textColor: 'var(--color-text-primary)',
-      links: [
-        {
-          label: t('nav.company'),
-          ariaLabel: t('nav.aboutCompany'),
-          href: '/about/company',
-        },
-        {
-          label: t('nav.careers'),
-          ariaLabel: t('nav.aboutCareers'),
-          href: '/about/careers',
-        },
-      ],
-    },
-    {
-      label: t('nav.billing'),
-      bgColor: 'var(--color-bg-surface)',
-      textColor: 'var(--color-text-primary)',
-      links: [
-        {
-          label: t('nav.billing'),
-          ariaLabel: t('nav.featuredProjects'), // Original ARIA label
-          href: '/billing',
-        },
-      ],
-    },
-    {
-      label: t('nav.distributors'),
-      bgColor: 'var(--color-bg-surface)',
-      textColor: 'var(--color-text-primary)',
-      links: [
-        {
-          label: t('nav.email'),
-          ariaLabel: t('nav.emailUs'),
-          href: '/contact/email',
-        },
-        {
-          label: t('nav.twitter'),
-          ariaLabel: t('nav.twitter'),
-          href: '/contact/twitter',
-        },
-        {
-          label: t('nav.linkedin'),
-          ariaLabel: t('nav.linkedin'),
-          href: '/contact/linkedin',
-        },
-      ],
-    },
-  ];
-
-  // --- Get user data from localStorage ---
+  // --- User Data ---
   const [userId, setUserId] = useState<string | null>(null);
   const [userInfo, setUserInfo] = useState<any>(null);
   const [userCountry, setUserCountry] = useState<string>('Norway');
 
   useEffect(() => {
-    // Get user data on component mount
     const id = getUserId();
     const info = getUserInfo();
-
     setUserId(id);
     setUserInfo(info);
-
-    // Set user country from user info or default to Norway
-    if (info?.region) {
-      setUserCountry(info.region);
-    }
-
-    console.log('📊 Dashboard loaded for user:', id, info);
+    if (info?.region) setUserCountry(info.region);
   }, []);
 
-  type SelectedLocation = { name: string; flag: string } | null;
-  const [selectedLocation, setSelectedLocation] =
-    useState<SelectedLocation>(null);
-  const [isLocationSwitcherOpen, setIsLocationSwitcherOpen] = useState(false);
-
-  // --- Component refresh trigger ---
   const [refreshTrigger, setRefreshTrigger] = useState(0);
-  const handleItemAdded = () => {
-    setRefreshTrigger((prev) => prev + 1);
-  };
-
-  // --- REFACTORED: Combined styles into a single Tailwind class string ---
-  const bentoCardClasses =
-    'flex flex-col justify-between relative w-full max-w-full rounded-[20px] font-light overflow-hidden transition-all duration-300 ease-in-out hover:-translate-y-0.5 bg-[var(--color-bg-surface)] border border-[var(--color-border)] text-[var(--color-text-secondary)]';
+  const handleItemAdded = () => setRefreshTrigger((prev) => prev + 1);
 
   return (
-    <div className="flex flex-col h-screen">
-      {/* --- FIXED: Updated CardNav props to use new palette --- */}
-      <CardNav />
-      {/* <Navbar /> */}
+    <div className="relative min-h-screen bg-[#F5F5F7] font-sans antialiased text-[#1D1D1F] selection:bg-[#007AFF] selection:text-white">
 
-      {/* --- FIXED: Updated main background and default text color --- */}
-      <main className="flex-1 overflow-y-auto p-6 lg:p-8 bg-[var(--color-bg-night)] text-[var(--color-text-secondary)]">
-        {/* <h1 className="text-3xl font-bold text-gray-100 mb-6  mt-18">{t('title')}</h1> */}
-        <div className="mt-22">
-          {/* --- REMOVED: <MagicBento> wrapper --- */}
+      {/* --- Ambient Background --- */}
+      <div className="fixed inset-0 z-0 opacity-40 pointer-events-none mix-blend-soft-light decoration-clone">
+        <Aurora colorStops={["#E0F2FE", "#F3E8FF", "#FCE7F3"]} blend={0.8} amplitude={0.5} speed={0.2} />
+      </div>
 
-          {/* Main responsive grid for the dashboard. */}
-          <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-            {/* Main content area (charts) */}
-            <div className="xl:col-span-2 flex flex-col gap-6">
-              {/* Grid for the top two charts */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* --- NEW MAIN CONTENT COMPONENTS START HERE --- */}
+      <div className="relative z-10 flex flex-col min-h-screen">
+        <CardNav />
 
-                {/* Analytics Table (Spans full width of this column) */}
-                <div className={`${bentoCardClasses} md:col-span-2`}>
+        <main className="flex-1 w-full max-w-[1600px] mx-auto p-6 lg:p-12">
+
+          {/* --- Header Section --- */}
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12 mt-4 px-2">
+            <div className="space-y-1">
+              <h1 className="text-4xl md:text-5xl font-semibold tracking-tight text-[#1D1D1F]">
+                Dashboard
+              </h1>
+              <p className="text-lg text-gray-500 font-normal">
+                {userInfo?.name ? `Good morning, ${userInfo.name}` : "Retail Intelligence Overview"}
+              </p>
+            </div>
+            <div className="flex items-center gap-2 text-xs font-medium text-gray-500 bg-white/60 px-4 py-2 rounded-full backdrop-blur-md shadow-sm border border-white/50">
+              <span className="w-2 h-2 rounded-full bg-[#34C759] shadow-[0_0_8px_#34C759]" />
+              Systems Operational
+            </div>
+          </div>
+
+          {/* --- Main Grid Layout --- */}
+          <div className="grid grid-cols-1 xl:grid-cols-12 gap-8 items-start">
+
+            {/* LEFT COLUMN (Main Content) */}
+            <div className="xl:col-span-8 space-y-12">
+
+              {/* Analytics Section */}
+              <section>
+                <SectionTitle>Performance Overview</SectionTitle>
+                <GlassCard className="p-2 min-h-[400px]">
                   {userId ? (
                     <AnalyticsTable userId={userId} />
                   ) : (
-                    // --- MODIFIED ---
-                    <div className="p-6 text-center text-gray-500">
-                      {t('loadingUserData')}
-                    </div>
+                    <div className="flex items-center justify-center h-64 text-gray-400 font-light">{t('loadingUserData')}</div>
                   )}
-                </div>
+                </GlassCard>
+              </section>
 
-                {/* Inventory Table (Spans full width of this column) */}
-                <div className={`${bentoCardClasses} md:col-span-2`}>
-                  <InventoryTable
-                    userId={userId || undefined}
-                    key={refreshTrigger}
-                  />
+              {/* Inventory Section */}
+              <section>
+                <div className="flex items-center justify-between mb-4 px-2">
+                  <SectionTitle>Live Inventory</SectionTitle>
+                  <button onClick={() => setRefreshTrigger(prev => prev + 1)} className="text-xs font-semibold text-[#0066CC] hover:text-[#004499] transition-colors">
+                    Refresh
+                  </button>
                 </div>
+                <GlassCard className="p-2">
+                  <InventoryTable userId={userId || undefined} key={refreshTrigger} />
+                </GlassCard>
+              </section>
 
-                {/* Top Sold Last Year */}
-                <div className={bentoCardClasses}>
-                  <TopSoldLastYear userId={userId || undefined} />
+              {/* Insights Split Section */}
+              <section>
+                <SectionTitle>Market Insights</SectionTitle>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <GlassCard className="p-2">
+                    <TopSoldLastYear userId={userId || undefined} />
+                  </GlassCard>
+                  <GlassCard className="p-2">
+                    <RegionalTopTable country={userCountry} />
+                  </GlassCard>
                 </div>
+              </section>
 
-                {/* Regional Top Sellers */}
-                <div className={bentoCardClasses}>
-                  <RegionalTopTable country={userCountry} />
-                </div>
-
-                {/* --- NEW MAIN CONTENT COMPONENTS END HERE --- */}
-              </div>
             </div>
 
-            {/* Right sidebar area (weather & alerts) */}
-            <div className="flex flex-col gap-6">
-              {/* MODIFIED: Replaced MagicBentoCard with <div> */}
-              <div className={bentoCardClasses}>
-                <WeatherWidget
-                  locationName="Sweden"
-                />
-              </div>
+            {/* RIGHT COLUMN (Sidebar) */}
+            <div className="xl:col-span-4 space-y-8 xl:sticky xl:top-8">
 
-              {/* MODIFIED: Replaced MagicBentoCard with <div> */}
-              <div className={bentoCardClasses}>
-                <InventoryAlerts />
-              </div>
+              {/* Context Widgets (Weather & Alerts) */}
+              <section className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-1 gap-6">
+                <div className="space-y-4">
+                  <SectionTitle>Status</SectionTitle>
+                  <GlassCard className="p-6 flex flex-col items-center justify-center bg-gradient-to-br from-blue-50/50 to-white/50">
+                    <WeatherWidget locationName={userCountry} />
+                  </GlassCard>
+                </div>
+                <div className="space-y-4 md:mt-10 xl:mt-0">
+                  <div className="hidden xl:block h-6"></div>
+                  <GlassCard className="p-6 bg-gradient-to-br from-purple-50/50 to-white/50">
+                    <InventoryAlerts />
+                  </GlassCard>
+                </div>
+              </section>
 
-              {/* --- NEW SIDEBAR COMPONENTS START HERE --- */}
+              {/* Action Center */}
+              <section>
+                <SectionTitle>Command Center</SectionTitle>
+                <div className="space-y-5">
 
-              <div className={bentoCardClasses}>
-                <AddItemForm
-                  userId={userId || undefined}
-                  onItemAdded={handleItemAdded}
-                />
-              </div>
+                  {/* Primary Action */}
+                  <GlassCard className="p-8 border-l-0 relative group cursor-pointer active:scale-[0.98] transition-all">
+                    <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#00C7BE] to-[#32ADE6] opacity-80" />
+                    <h4 className="text-xl font-semibold mb-6 text-[#1D1D1F]">Add Inventory</h4>
+                    <AddItemForm userId={userId || undefined} onItemAdded={handleItemAdded} />
+                  </GlassCard>
 
-              <div className={bentoCardClasses}>
-                {userId ? (
-                  <AddAgentForm userId={userId} />
-                ) : (
-                  // --- MODIFIED ---
-                  <div className="p-6 text-center text-gray-500">
-                    {t('loadingUserData')}
+                  {/* Secondary Actions Grouped */}
+                  <div className="grid gap-5">
+                    <GlassCard className="p-6 hover:bg-white transition-colors">
+                      <h4 className="text-xs font-bold text-gray-400 mb-4 uppercase tracking-wider">AI Forecasting</h4>
+                      <ForecastForm />
+                    </GlassCard>
+
+                    <GlassCard className="p-6 hover:bg-white transition-colors">
+                      <h4 className="text-xs font-bold text-gray-400 mb-4 uppercase tracking-wider">Dynamic Pricing</h4>
+                      {userId ? <DynamicPricingForm userId={userId} /> : <div className="text-sm text-gray-400">Loading...</div>}
+                    </GlassCard>
+
+                    <GlassCard className="p-6 hover:bg-white transition-colors">
+                      <h4 className="text-xs font-bold text-gray-400 mb-4 uppercase tracking-wider">Agent Management</h4>
+                      {userId ? <AddAgentForm userId={userId} /> : <div className="text-sm text-gray-400">Loading...</div>}
+                    </GlassCard>
                   </div>
-                )}
-              </div>
 
-              <div className={bentoCardClasses}>
-                {userId ? (
-                  <DynamicPricingForm userId={userId} />
-                ) : (
-                  // --- MODIFIED ---
-                  <div className="p-6 text-center text-gray-500">
-                    {t('loadingUserData')}
-                  </div>
-                )}
-              </div>
-              <div className={bentoCardClasses}>
-                <ForecastForm />
-              </div>
+                </div>
+              </section>
 
-              {/* --- NEW SIDEBAR COMPONENTS END HERE --- */}
             </div>
           </div>
-          {/* --- REMOVED: </MagicBento> wrapper --- */}
-        </div>
-      </main>
+        </main>
+      </div>
     </div>
   );
 }

@@ -61,76 +61,11 @@ export function AnalyticsTable({ userId }: Props) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // --- Theme Style Objects (Unchanged) ---
-  const cardStyle = {
-    background: 'rgba(255, 255, 255, 0.7)',
-    backdropFilter: 'blur(10px)',
-    border: '1px solid var(--color-border)',
-    borderRadius: '12px',
-    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.05)',
-  };
-  const innerCardStyle = {
-    background: 'var(--color-bg-surface)',
-    borderColor: 'var(--color-border)',
-  };
-  const textPrimary = { color: 'var(--color-text-primary)' };
-  const textSecondary = { color: 'var(--color-text-secondary)' };
-  // --- End Theme Styles ---
+  // --- Revised Theme Styles (Clean/Apple) ---
+  // We rely on the parent GlassCard for the main background/shadow
+  // This component just renders the grid cleanly.
 
-  useEffect(() => {
-    if (useDummyData) {
-      setMetrics(dummyMetrics); // Dummy data already uses keys
-      setLoading(false);
-      return;
-    }
-
-    if (!userId) {
-      setLoading(false);
-      setError(t('errorNoUserId')); // +++ TRANSLATED
-      return;
-    }
-
-    const fetchMetrics = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        const res = await api.getAnalytics(userId);
-
-        if (!res.ok) {
-          throw new Error(`API Error: ${res.status} ${res.statusText}`);
-        }
-
-        const responseData = await res.json();
-        console.log('API analytics response:', responseData);
-
-        const metricsArray =
-          responseData.metrics || responseData.data || responseData;
-
-        if (Array.isArray(metricsArray) && metricsArray.length > 0) {
-          // +++ MAP API DATA TO USE i18n KEYS +++
-          const mappedMetrics = metricsArray.map((m: KpiMetric) => ({
-            ...m,
-            metric: getMetricKey(m.metric),
-          }));
-          setMetrics(mappedMetrics);
-        } else {
-          console.warn(
-            'API response was empty or invalid, falling back to mock data.'
-          );
-          setMetrics(dummyMetrics); // Fallback uses keys
-        }
-      } catch (err) {
-        console.error('Error fetching analytics, falling back to mock data:', err);
-        setMetrics(dummyMetrics); // Fallback uses keys
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchMetrics();
-  }, [userId, useDummyData, t]); // +++ Add `t` to dependency array
-
-  // --- getChangeIcon (Unchanged) ---
+  // --- Helper Functions ---
   const getChangeIcon = (change?: string) => {
     if (!change) return <Minus className="h-4 w-4 text-gray-500" />;
     if (change.startsWith('+'))
@@ -139,62 +74,50 @@ export function AnalyticsTable({ userId }: Props) {
       return <ArrowDownRight className="h-4 w-4 text-red-500" />;
     return <Minus className="h-4 w-4 text-gray-500" />;
   };
-  // ---
 
   if (loading) {
     return (
-      <div className="p-6" style={cardStyle}>
-        <h3 className="text-lg text-red font-semibold mb-4" style={textPrimary}>
-          <GradientText>
-            {t('title')} {/* +++ TRANSLATED */}
-          </GradientText>
-        </h3>
-        <div className="p-4 text-center" style={textSecondary}>
-          {t('loading')} {/* +++ TRANSLATED */}
-        </div>
+      <div className="flex flex-col items-center justify-center h-full p-6 text-gray-400">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-300 mb-2"></div>
+        <p className="text-sm font-medium">{t('loading')}</p>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="p-6" style={cardStyle}>
-        <h3 className="text-lg font-semibold mb-4" style={textPrimary}>
-          {t('title')} {/* +++ TRANSLATED */}
-        </h3>
-        <div className="p-4 text-center text-red-500">
-          {t('errorPrefix')}
-          {error} {/* +++ TRANSLATED (prefix) */}
-        </div>
+      <div className="p-6 text-center text-red-500">
+        <p className="text-sm font-medium">{t('errorPrefix')} {error}</p>
       </div>
     );
   }
 
   return (
-    <div className="p-6" style={cardStyle}>
-      <h3 className="text-lg font-semibold mb-4" style={textPrimary}>
-        {t('title')} {/* +++ TRANSLATED */}
-      </h3>
+    <div className="p-4">
+      {/* Title is handled by SectionTitle in parent usually, but we keep a subtle header if needed or remove it if redundant. 
+          The previous design had a header inside. We'll keep it simple. */}
+      {/* <h3 className="text-sm font-semibold text-gray-900 mb-6">{t('title')}</h3> */}
+
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {metrics.map((metric) => (
           <div
             key={metric._id}
-            className="p-4 rounded-lg border"
-            style={innerCardStyle}
+            className="p-5 rounded-2xl bg-[#F5F5F7] hover:bg-white border border-transparent hover:border-gray-100 hover:shadow-sm transition-all duration-300"
           >
-            <p className="text-sm font-medium truncate" style={textSecondary}>
-              {t(metric.metric)} {/* +++ TRANSLATED (dynamic key) */}
+            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide truncate">
+              {t(metric.metric)}
             </p>
-            <p className="mt-1 text-2xl font-semibold" style={textPrimary}>
+            <p className="mt-2 text-2xl font-semibold text-[#1D1D1F] tracking-tight">
               {metric.value}
             </p>
             {metric.change && (
               <p
-                className="mt-1 text-xs flex items-center gap-1"
-                style={textSecondary}
+                className="mt-1 text-xs flex items-center gap-1 font-medium"
               >
                 {getChangeIcon(metric.change)}
-                {metric.change} {t('changeSuffix')} {/* +++ TRANSLATED */}
+                <span className={metric.change.startsWith('+') ? 'text-green-600' : metric.change.startsWith('-') ? 'text-red-500' : 'text-gray-500'}>
+                  {metric.change} {t('changeSuffix')}
+                </span>
               </p>
             )}
           </div>

@@ -116,71 +116,77 @@
   * {
     @apply border-border outline-ring/50;
   }
+
   body {
     @apply bg-background text-foreground;
   }
 }
 
 :root {
-  --radius: 0.625rem;
+  --radius: 0.75rem;
+  /* Slightly more rounded ~12px */
 
-  /* === Light Mode (White Theme) === */
-  --background: oklch(1 0 0);               /* Pure white background */
-  --foreground: oklch(0.145 0 0);           /* Deep neutral text */
-  
-  --card: oklch(0.985 0 0);                 /* Very light grey card */
-  --card-foreground: oklch(0.145 0 0);
+  /* === Premium Apple Light Mode === */
+  /* Background: Soft off-white, not stark white */
+  --background: oklch(0.968 0.007 247.896);
+  /* #F5F5F7 equivalent */
+  --foreground: oklch(0.141 0.005 285.823);
+  /* #1D1D1F Almost black */
+
+  /* Cards: Pure white with subtle depth */
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.141 0.005 285.823);
 
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
+  --popover-foreground: oklch(0.141 0.005 285.823);
 
-  --primary: oklch(0.205 0 0);              /* Charcoal primary for buttons/text */
-  --primary-foreground: oklch(0.985 0 0);   /* White text on primary */
+  /* Primary: Deep Charcoal/Black for contrast or Apple Blue */
+  --primary: oklch(0.141 0.005 285.823);
+  --primary-foreground: oklch(1 0 0);
 
-  --secondary: oklch(0.97 0 0);             /* Light grey */
+  /* Secondary: Light gray for pressed states/subtle backgrounds */
+  --secondary: oklch(0.96 0 0);
   --secondary-foreground: oklch(0.205 0 0);
 
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
+  --muted: oklch(0.96 0 0);
+  --muted-foreground: oklch(0.552 0 0);
+  /* #86868b */
 
-  --accent: oklch(0.97 0 0);
+  --accent: oklch(0.96 0 0);
+  /* Hover state */
   --accent-foreground: oklch(0.205 0 0);
 
   --destructive: oklch(0.577 0.245 27.325);
 
-  --border: oklch(0.922 0 0);               /* Soft neutral border */
-  --input: oklch(0.922 0 0);
+  --border: oklch(0.92 0 0);
+  /* Subtle border */
+  --input: oklch(0.92 0 0);
   --ring: oklch(0.708 0 0);
 
-  /* === Chart Colors (Unchanged) === */
+  /* === Chart Colors (Pastel/Premium) === */
   --chart-1: oklch(0.646 0.222 41.116);
   --chart-2: oklch(0.6 0.118 184.704);
   --chart-3: oklch(0.398 0.07 227.392);
   --chart-4: oklch(0.828 0.189 84.429);
   --chart-5: oklch(0.769 0.188 70.08);
 
-  /* === Sidebar === */
-  --sidebar: oklch(1 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
+  /* === Sidebar (Matches Background or Card) === */
+  --sidebar: oklch(0.968 0.007 247.896);
+  --sidebar-foreground: oklch(0.141 0.005 285.823);
+  --sidebar-primary: oklch(0.141 0.005 285.823);
+  --sidebar-primary-foreground: oklch(1 0 0);
+  --sidebar-accent: oklch(0.92 0 0);
+  --sidebar-accent-foreground: oklch(0.141 0.005 285.823);
+  --sidebar-border: oklch(0.92 0 0);
   --sidebar-ring: oklch(0.708 0 0);
 
-  /* === Dark Mode Theme for Dashboard === */
-  --color-bg-night: #0D1117;          /* Dark background matching landing page */
-  --color-bg-surface: #161B22;        /* Slightly lighter dark surface */
+  /* === Custom Dashboard Colors === */
+  --color-bg-night: #0D1117;
+  --color-bg-surface: #FFFFFF;
 
-  /* Text & Accents */
-  --color-text-primary: #F0F4F8;      /* Light text */
-  --color-text-secondary: #A2B4C6;    /* Muted light text */
-  --color-border: #30363D;            /* Dark border */
+  --color-text-primary: #1D1D1F;
+  --color-text-secondary: #86868B;
 
-  /* Aurora Action Colors (unchanged) */
   --color-primary-green: #00F2A9;
-  --color-primary-purple: #9358F7;
-  --color-primary-pink: #E040FB;
+  /* Keep brand accent */
 }
-

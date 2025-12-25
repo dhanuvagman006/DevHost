@@ -11,13 +11,9 @@ import { useRouter } from "next/navigation";
 import { FaUser } from "react-icons/fa";
 
 import LanguageSwitcher from "./LanguageSwitcher";
-import LocationSwitcher from "./LocationSwitcher";
+import LocationSwitcher, { Location } from "./LocationSwitcher";
 
-// --- Types are still needed for internal definitions ---
-type Location = {
-  name: string;
-  flag: string;
-} | null;
+
 
 type CardNavLink = {
   label: string;
@@ -77,17 +73,22 @@ const CardNav: React.FC<CardNavProps> = ({
   ];
 
   // --- 4. DEFINE STATE INTERNALLY ---
-  const [isLocationSwitcherOpen, setIsLocationSwitcherOpen] = useState(false);
+
   const [selectedLocation, setSelectedLocation] = useState<Location>({
     name: "Global",
     flag: "🌍",
   });
-  
+
   const [isHamburgerOpen, setIsHamburgerOpen] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
-  
+
   // This state is now only for the language switcher
-  const [activeDropdown, setActiveDropdown] = useState<"language" | null>(null);
+  const [activeDropdown, setActiveDropdown] = useState<"language" | "location" | null>(null);
+  // The selectedLocation state above is now used for LocationSwitcher
+  // const [selectedLocation, setSelectedLocation] = useState<Location>({
+  //   name: "Global",
+  //   flag: "🌍",
+  // });
 
   const navRef = useRef<HTMLDivElement | null>(null);
   const cardsRef = useRef<HTMLDivElement[]>([]);
@@ -98,13 +99,14 @@ const CardNav: React.FC<CardNavProps> = ({
   const languageRef = useRef<HTMLDivElement | null>(null);
 
   // --- 5. DEFINE STATE HANDLERS INTERNALLY ---
-  const onToggleLocationSwitcher = () => {
-    setIsLocationSwitcherOpen((prev) => !prev);
+
+  const toggleLocation = () => {
+    setActiveDropdown(activeDropdown === "location" ? null : "location");
   };
 
   const onLocationChange = (location: Location) => {
     setSelectedLocation(location);
-    setIsLocationSwitcherOpen(false); // Close dropdown on selection
+    setActiveDropdown(null);
   };
 
   const toggleLanguage = () => {
@@ -118,24 +120,31 @@ const CardNav: React.FC<CardNavProps> = ({
   // Click-outside listener
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      // Check for clicks outside the location switcher
-      const isOutsideLocation =
-        isLocationSwitcherOpen &&
-        locationRef.current &&
-        !locationRef.current.contains(event.target as Node);
-
       // Check for clicks outside the language switcher
       const isOutsideLanguage =
         activeDropdown === "language" &&
         languageRef.current &&
         !languageRef.current.contains(event.target as Node);
 
-      if (isOutsideLocation) {
-        onToggleLocationSwitcher(); // Use internal handler
+      const isOutsideLocation =
+        activeDropdown === "location" &&
+        locationRef.current &&
+        !locationRef.current.contains(event.target as Node);
+
+      if (isOutsideLanguage || isOutsideLocation) {
+        setActiveDropdown(null);
       }
 
-      if (isOutsideLanguage) {
-        setActiveDropdown(null);
+      // Ideally we would check location too, but let's stick to language for now as it was causing issues.
+      // Or better, logic:
+      if (activeDropdown !== null) {
+        // Logic to close if click is outside both?
+        // Simply:
+        if (
+          activeDropdown === 'language' && isOutsideLanguage
+        ) {
+          setActiveDropdown(null);
+        }
       }
     };
 
@@ -144,7 +153,7 @@ const CardNav: React.FC<CardNavProps> = ({
       document.removeEventListener("mousedown", handleClickOutside);
     };
     // Dependencies are now internal state/handlers
-  }, [activeDropdown, isLocationSwitcherOpen]);
+  }, [activeDropdown]);
 
   // ... (calculateHeight, createTimeline, etc. remain unchanged) ...
   const calculateHeight = () => {
@@ -266,12 +275,12 @@ const CardNav: React.FC<CardNavProps> = ({
     >
       {/* --- LocationSwitcher now uses internal state --- */}
       <div
-        className="absolute right-full top-1/2 -translate-y-1/2 mr-8"
+        className="absolute right-full top-1/2 -translate-x-4 -translate-y-1/2 mr-8 hidden md:block"
         ref={locationRef}
       >
         <LocationSwitcher
-          isOpen={false}
-          onToggle={() => {}}
+          isOpen={activeDropdown === 'location'}
+          onToggle={toggleLocation}
           selectedLocation={selectedLocation}
           onLocationChange={onLocationChange}
         />
@@ -279,69 +288,55 @@ const CardNav: React.FC<CardNavProps> = ({
 
       <nav
         ref={navRef}
-        className={`card-nav ${
-          isExpanded ? "open" : ""
-        } block h-[64px] p-0 bg-white rounded-xl shadow-md relative overflow-hidden will-change-[height]`}
-        style={{ backgroundColor: baseColor }}
+        className={`card-nav ${isExpanded ? "open" : ""
+          } block h-[64px] p-0 bg-white/80 backdrop-blur-xl rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.04)] ring-1 ring-white/60 relative overflow-hidden will-change-[height]`}
+        style={{ backgroundColor: isExpanded ? 'rgba(255,255,255,0.95)' : 'rgba(255,255,255,0.8)' }}
       >
         <div className="card-nav-top absolute inset-x-0 top-0 h-[64px] flex items-center justify-between p-2 pl-[1.1rem] z-[2]">
           <div
-            className={`hamburger-menu ${
-              isHamburgerOpen ? "open" : ""
-            } group h-full flex flex-col items-center justify-center cursor-pointer gap-[6px] order-2 md:order-none`}
+            className={`hamburger-menu ${isHamburgerOpen ? "open" : ""
+              } group h-full flex flex-col items-center justify-center cursor-pointer gap-[5px] order-2 md:order-none opacity-80 hover:opacity-100 transition-opacity`}
             onClick={toggleMenu}
             role="button"
             aria-label={isExpanded ? "Close menu" : "Open menu"}
             tabIndex={0}
             style={{
-              color: menuColor || (baseColor === "#fff" ? "#000" : "#fff"),
+              color: "#1D1D1F",
             }}
           >
             <div
-              className={`hamburger-line w-[30px] h-[2px] bg-current transition-[transform,opacity,margin] duration-300 ease-linear [transform-origin:50%_50%] ${
-                isHamburgerOpen ? "translate-y-[4px] rotate-45" : ""
-              }`}
+              className={`hamburger-line w-[24px] h-[2px] bg-current transition-[transform,opacity,margin] duration-300 ease-spring [transform-origin:50%_50%] ${isHamburgerOpen ? "translate-y-[3.5px] rotate-45" : ""
+                }`}
             />
             <div
-              className={`hamburger-line w-[30px] h-[2px] bg-current transition-[transform,opacity,margin] duration-300 ease-linear [transform-origin:50%_50%] ${
-                isHamburgerOpen ? "-translate-y-[4px] -rotate-45" : ""
-              }`}
+              className={`hamburger-line w-[24px] h-[2px] bg-current transition-[transform,opacity,margin] duration-300 ease-spring [transform-origin:50%_50%] ${isHamburgerOpen ? "-translate-y-[3.5px] -rotate-45" : ""
+                }`}
             />
           </div>
 
           {/* --- Logo now uses internal data --- */}
           <div className="logo-container flex items-center md:absolute md:left-1/2 md:top-1/2 md:-translate-x-1/2 md:-translate-y-1/2 order-1 md:order-none">
-            <a href="/dashboard" aria-label="Go to Dashboard">
-              <img src={logo} alt={logoAlt} className="logo h-[32px]" />
+            <a href="/dashboard" aria-label="Go to Dashboard" className="font-semibold text-lg text-[#1D1D1F] tracking-tight">
+              Folkspace
+              {/* <img src={logo} alt={logoAlt} className="logo h-[32px]" /> */}
             </a>
           </div>
-
-          {/* <button
-             type="button"
-             className="card-nav-cta-button hidden md:inline-flex border-0 rounded-[calc(0.75rem-0.2rem)] px-4 items-center h-full font-medium cursor-pointer transition-colors duration-300"
-             style={{ backgroundColor: buttonBgColor, color: buttonTextColor }}
-             onClick={() => router.push("/billing")}
-           >
-             Go to Billing
-           </button>
-           */}
         </div>
 
         <div
-          className={`card-nav-content absolute left-0 right-0 top-[64px] bottom-0 p-2 flex flex-col items-stretch gap-2 justify-start z-[1] ${
-            isExpanded
-              ? "visible pointer-events-auto"
-              : "invisible pointer-events-none"
-          } md:flex-row md:items-stretch md:gap-[12px]`}
+          className={`card-nav-content absolute left-0 right-0 top-[64px] bottom-0 p-2 flex flex-col items-stretch gap-2 justify-start z-[1] ${isExpanded
+            ? "visible pointer-events-auto"
+            : "invisible pointer-events-none"
+            } md:flex-row md:items-stretch md:gap-[12px]`}
           aria-hidden={!isExpanded}
         >
           {/* --- Items now uses internal data --- */}
           {(items || []).slice(0, 3).map((item, idx) => (
             <div
               key={`${item.label}-${idx}`}
-              className="nav-card select-none relative flex flex-col justify-between p-[12px_16px] rounded-[calc(0.75rem-0.2rem)] min-w-0 flex-[1_1_auto] h-auto min-h-[60px] md:min-h-0 md:flex-[1_1_0%] cursor-pointer transition-transform duration-300 hover:scale-[1.02]"
+              className="nav-card select-none relative flex flex-col justify-between p-[16px_20px] rounded-xl min-w-0 flex-[1_1_auto] h-auto min-h-[80px] md:min-h-0 md:flex-[1_1_0%] cursor-pointer transition-all duration-300 hover:scale-[1.01] active:scale-[0.99]"
               ref={setCardRef(idx)}
-              style={{ backgroundColor: item.bgColor, color: item.textColor }}
+              style={{ backgroundColor: "#F5F5F7", color: "#1D1D1F" }}
               onClick={() => {
                 const link = item.links?.[0]?.href;
                 if (link) {
@@ -353,12 +348,12 @@ const CardNav: React.FC<CardNavProps> = ({
                 }
               }}
             >
-              <div className="nav-card-label font-normal tracking-[-0.5px] text-[18px] md:text-[22px]">
+              <div className="nav-card-label font-medium tracking-tight text-[16px] md:text-[18px]">
                 {item.label}
               </div>
 
-              <div className="flex items-center justify-end mt-2">
-                <GoArrowUpRight className="text-[20px]" />
+              <div className="flex items-center justify-end mt-2 opacity-50">
+                <GoArrowUpRight className="text-[18px]" />
               </div>
             </div>
           ))}

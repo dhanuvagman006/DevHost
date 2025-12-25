@@ -2,13 +2,16 @@
 
 import React, { useState, useMemo } from 'react';
 import CardNav from '@/components/CardNav';
-// --- TYPE DEFINITIONS ---
+import Aurora from "@/components/Aurora";
+import { ShoppingBag, CreditCard, Banknote, RefreshCcw, Plus, Minus, Trash2 } from 'lucide-react';
 
+// --- TYPE DEFINITIONS ---
 type Product = {
   id: number;
   name: string;
   price: number;
   category: string;
+  image?: string; // Optional image placeholder
 };
 
 type CartItem = {
@@ -19,7 +22,6 @@ type CartItem = {
 };
 
 // --- MOCK DATA ---
-
 const products: Product[] = [
   { id: 1, name: "Espresso", price: 3.50, category: "Coffee" },
   { id: 2, name: "Latte", price: 5.00, category: "Coffee" },
@@ -31,251 +33,266 @@ const products: Product[] = [
   { id: 8, name: "Salad", price: 9.00, category: "Food" },
   { id: 9, name: "Mineral Water", price: 2.50, category: "Drinks" },
   { id: 10, name: "Orange Juice", price: 4.50, category: "Drinks" },
-  { id: 11, name: "Tea", price: 3.00, category: "Coffee" },
+  { id: 11, name: "Green Tea", price: 3.00, category: "Coffee" },
   { id: 12, name: "Brownie", price: 4.25, category: "Pastry" },
 ];
 
-// --- STYLES ---
-// Button styles remain unchanged as requested, using Aurora colors.
+// --- COMPONENTS ---
 
-const btnBase = "w-full py-3 px-6 rounded-lg font-bold transition-all duration-300 ease-in-out whitespace-nowrap";
-
-// This gradient is not in the new palette, but we'll keep it as it's part of the "action" buttons
-const btnPrimary = `${btnBase} bg-gradient-to-r from-[#8A2387] via-[#E94057] to-[#F27121] text-white bg-size-200 bg-pos-0 hover:bg-pos-100`;
-
-// Using --color-primary-green
-const btnSecondary = `${btnBase} bg-[var(--color-primary-green)] text-black hover:shadow-[0_0_15px_5px_rgba(0,242,169,0.3)] hover:-translate-y-0.5`;
-
-// Using --color-primary-purple
-const btnSecondaryAlt = `${btnBase} bg-[var(--color-primary-purple)] text-white hover:shadow-[0_0_15px_5px_rgba(147,88,247,0.3)] hover:-translate-y-0.5`;
-
-// --- GLOBAL STYLES COMPONENT ---
-/**
- * Injects the new CSS variables and card styles into the document head.
- */
-const ThemeStyles = () => (
-  <style>{`
-    :root {
-      /* Backgrounds (White Theme) */
-      --color-bg-night: #FFFFFF;
-      --color-bg-surface: #F8F9FA;
-
-      /* Text & Accents */
-      --color-text-primary: #1A1A1A;
-      --color-text-secondary: #6B7280;
-      --color-border: #E5E7EB;
-
-      /* Aurora Action Colors */
-      --color-primary-green: #00F2A9;
-      --color-primary-purple: #9358F7;
-      --color-primary-pink: #E040FB;
-    }
-
-    /* Updated Card Component (Light Mode) */
-    .card {
-      background: rgba(255, 255, 255, 0.7); /* White glass */
-      backdrop-filter: blur(10px);
-      border: 1px solid var(--color-border);
-      border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05); /* soft elevation */
-    }
-  `}</style>
+const GlassCard = ({ children, className = "", onClick }: { children: React.ReactNode, className?: string, onClick?: () => void }) => (
+  <div
+    onClick={onClick}
+    className={`relative overflow-hidden bg-white/70 backdrop-blur-xl border border-white/60 shadow-[0_8px_30px_rgb(0,0,0,0.04)] transition-all duration-300 ${className}`}
+  >
+    {children}
+  </div>
 );
 
-
-// --- CHILD COMPONENTS ---
-
-/**
- * ProductCard: Displays a single clickable product.
- * Updated to use the new .card class and text variables.
- */
-interface ProductCardProps {
-  product: Product;
-  onAddToCart: (product: Product) => void;
-}
-
-const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart }) => {
-  // Merges the new .card class with layout and interaction classes.
-  const cardStyle = "card p-4 text-center cursor-pointer transition-all duration-300 hover:border-[var(--color-primary-green)] hover:-translate-y-1";
-
-  return (
-    <div className={cardStyle} onClick={() => onAddToCart(product)}>
-      <h3 className="text-xl font-bold text-[var(--color-text-primary)]">{product.name}</h3>
-      <p className="text-lg text-[var(--color-primary-green)]">${product.price.toFixed(2)}</p>
+const ProductCard = ({ product, onAddToCart }: { product: Product; onAddToCart: (p: Product) => void }) => (
+  <button
+    onClick={() => onAddToCart(product)}
+    className="group flex flex-col items-start justify-between p-6 w-full h-40 rounded-3xl bg-white/60 backdrop-blur-md border border-white/50 shadow-sm hover:shadow-md hover:bg-white/80 hover:scale-[1.02] transition-all duration-200 text-left"
+  >
+    <div className="space-y-1">
+      <span className="text-xs font-bold tracking-wider text-gray-400 uppercase">{product.category}</span>
+      <h3 className="text-xl font-bold text-[#1D1D1F] leading-tight group-hover:text-[#3A29FF] transition-colors">{product.name}</h3>
     </div>
-  );
-};
+    <div className="w-full flex justify-between items-end">
+      <span className="text-2xl font-medium text-[#1D1D1F]">${product.price.toFixed(2)}</span>
+      <div className="h-8 w-8 rounded-full bg-[#F5F5F7] flex items-center justify-center text-[#1D1D1F] group-hover:bg-[#3A29FF] group-hover:text-white transition-colors">
+        <Plus size={16} strokeWidth={3} />
+      </div>
+    </div>
+  </button>
+);
 
-/**
- * PaymentModal: Shows a success message after charging.
- * Updated to use the new .card class, text variables, and a lighter backdrop.
- */
-interface PaymentModalProps {
-  isOpen: boolean;
-  total: number;
-  onClose: () => void;
-}
+const CartItemRow = ({ item, onUpdate }: { item: CartItem, onUpdate: (id: number, delta: number) => void }) => (
+  <div className="flex items-center justify-between p-4 mb-2 rounded-2xl bg-white/40 border border-white/50 hover:bg-white/60 transition-colors">
+    <div className="flex-1">
+      <h4 className="font-semibold text-[#1D1D1F]">{item.name}</h4>
+      <p className="text-sm text-gray-500">${item.price.toFixed(2)}</p>
+    </div>
 
-const PaymentModal: React.FC<PaymentModalProps> = ({ isOpen, total, onClose }) => {
-  if (!isOpen) return null;
-
-  return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 mt-22" style={{ backdropFilter: 'blur(10px)' }} >
-      {/* Light-mode modal card */}
-      <div className="card p-8 text-center max-w-sm w-full">
-        {/* Aurora Green Checkmark SVG (Unchanged) */}
-        <svg className="w-16 h-16 mx-auto" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM10 17L5 12L6.41 10.59L10 14.17L17.59 6.58L19 8L10 17Z" fill="var(--color-primary-green)" />
-        </svg>
-        <h2 className="text-3xl font-bold mt-4 text-[var(--color-text-primary)]">Payment Successful</h2>
-        <p className="text-lg mt-2 text-[var(--color-text-secondary)]">
-          Total Charged: <strong className="text-[var(--color-text-primary)]">${total.toFixed(2)}</strong>
-        </p>
-        <button className={`${btnSecondary} mt-6`} onClick={onClose}>
-          New Order
+    <div className="flex items-center gap-3">
+      <div className="flex items-center bg-white rounded-lg shadow-sm border border-gray-100 p-1">
+        <button
+          onClick={(e) => { e.stopPropagation(); onUpdate(item.id, -1); }}
+          className="p-1 hover:bg-gray-100 rounded-md transition-colors text-gray-500 hover:text-red-500"
+        >
+          {item.quantity === 1 ? <Trash2 size={16} /> : <Minus size={16} />}
         </button>
+        <span className="w-8 text-center font-medium text-sm">{item.quantity}</span>
+        <button
+          onClick={(e) => { e.stopPropagation(); onUpdate(item.id, 1); }}
+          className="p-1 hover:bg-gray-100 rounded-md transition-colors text-gray-500 hover:text-[#3A29FF]"
+        >
+          <Plus size={16} />
+        </button>
+      </div>
+      <span className="font-bold text-[#1D1D1F] w-16 text-right">
+        ${(item.price * item.quantity).toFixed(2)}
+      </span>
+    </div>
+  </div>
+);
+
+const PaymentModal = ({ isOpen, total, onClose }: { isOpen: boolean; total: number; onClose: () => void }) => {
+  if (!isOpen) return null;
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/20 backdrop-blur-sm animate-in fade-in duration-200">
+      <div className="w-full max-w-sm p-8 rounded-[40px] bg-white shadow-2xl scale-100 animate-in zoom-in-95 duration-200">
+        <div className="flex flex-col items-center text-center space-y-6">
+          <div className="h-20 w-20 rounded-full bg-[#00F2A9]/20 flex items-center justify-center text-[#00F2A9]">
+            <ShoppingBag size={40} />
+          </div>
+
+          <div className="space-y-2">
+            <h2 className="text-3xl font-bold text-[#1D1D1F]">Payment Success</h2>
+            <p className="text-gray-500">Transaction completed successfully.</p>
+          </div>
+
+          <div className="w-full py-4 border-y border-gray-100">
+            <div className="flex justify-between text-lg">
+              <span className="text-gray-500">Total Paid</span>
+              <span className="font-bold text-[#1D1D1F]">${total.toFixed(2)}</span>
+            </div>
+          </div>
+
+          <button
+            onClick={onClose}
+            className="w-full py-4 rounded-2xl bg-[#1D1D1F] text-white font-bold text-lg hover:scale-105 hover:bg-black transition-all duration-200 shadow-lg"
+          >
+            Start New Order
+          </button>
+        </div>
       </div>
     </div>
   );
 };
 
+// --- MAIN PAGE ---
 
-/**
- * Main App Component: The entire POS system.
- * Updated with new background, surface, text, and border colors.
- */
-export default function App() {
+export default function PosPage() {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState<string>("All");
 
-  // --- CART LOGIC (Unchanged) ---
+  const categories = ["All", ...Array.from(new Set(products.map(p => p.category)))];
 
   const handleAddToCart = (product: Product) => {
-    setCart((prevCart) => {
-      const existingItem = prevCart.find((item) => item.id === product.id);
-      if (existingItem) {
-        // Increment quantity
-        return prevCart.map((item) =>
-          item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item
-        );
-      } else {
-        // Add new item
-        return [...prevCart, { ...product, quantity: 1 }];
-      }
+    setCart((prev) => {
+      const existing = prev.find((item) => item.id === product.id);
+      return existing
+        ? prev.map((item) => item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item)
+        : [...prev, { ...product, quantity: 1 }];
     });
   };
 
-  const handleClearCart = () => {
-    setCart([]);
+  const handleUpdateQuantity = (id: number, delta: number) => {
+    setCart(prev => prev.map(item => {
+      if (item.id === id) {
+        return { ...item, quantity: Math.max(0, item.quantity + delta) };
+      }
+      return item;
+    }).filter(item => item.quantity > 0));
   };
 
-  const handleCharge = () => {
-    if (cart.length === 0) return; // Don't charge on empty cart
-    setIsModalOpen(true);
-  };
+  const filteredProducts = selectedCategory === "All"
+    ? products
+    : products.filter(p => p.category === selectedCategory);
 
-  const handleCloseModal = () => {
-    setIsModalOpen(false);
-    handleClearCart();
-  };
-
-  // --- MEMOIZED CALCULATIONS (Unchanged) ---
-
-  const subtotal = useMemo(() => {
-    return cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
-  }, [cart]);
-
-  const tax = useMemo(() => subtotal * 0.05, [subtotal]);
-  const total = useMemo(() => subtotal + tax, [subtotal, tax]);
+  const subtotal = useMemo(() => cart.reduce((sum, item) => sum + item.price * item.quantity, 0), [cart]);
+  const tax = subtotal * 0.05;
+  const total = subtotal + tax;
 
   return (
-    <>
-      {/* Injects the new theme variables and styles */}
-      <ThemeStyles />
+    <div className="relative min-h-screen bg-[#F5F5F7] font-sans antialiased text-[#1D1D1F] selection:bg-[#00F2A9] selection:text-black">
 
-      <CardNav />
-      {/* Main container uses new theme variables for bg and text */}
-      <div className="w-full h-screen bg-[var(--color-bg-night)] text-[var(--color-text-secondary)] font-sans overflow-hidden grid grid-cols-1 lg:grid-cols-3">
+      {/* Background Aurora */}
+      <div className="fixed inset-0 z-0 opacity-60 pointer-events-none">
+        <Aurora colorStops={["#00F2A9", "#3A29FF", "#FF94B4"]} blend={0.6} amplitude={0.5} speed={0.3} />
+      </div>
 
-        {/* === Product Grid (Left Column) === */}
-        <main className="lg:col-span-2 p-6 md:p-8 h-screen overflow-y-auto mt-22">
-          <header className="mb-6">
-            <h1 className="text-4xl font-extrabold text-[var(--color-text-primary)]">Products</h1>
-          </header>
+      <div className="relative z-10 flex flex-col min-h-screen">
+        <CardNav />
 
-          <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
-            {products.map((product) => (
-              <ProductCard
-                key={product.id}
-                product={product}
-                onAddToCart={handleAddToCart}
-              />
-            ))}
+        <main className="flex-1 w-full max-w-[1800px] mx-auto p-4 md:p-6 lg:p-10 pt-24">
+
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 h-[calc(100vh-140px)]">
+
+            {/* --- LEFT: PRODUCT GRID --- */}
+            <div className="lg:col-span-8 flex flex-col h-full gap-6">
+
+              {/* Header & Filter */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                  <h1 className="text-3xl font-bold text-[#1D1D1F]">Point of Sale</h1>
+                  <p className="text-gray-500">Select items to add to order</p>
+                </div>
+
+                <div className="flex gap-2 overflow-x-auto pb-2 sm:pb-0 scrollbar-hide">
+                  {categories.map(cat => (
+                    <button
+                      key={cat}
+                      onClick={() => setSelectedCategory(cat)}
+                      className={`px-5 py-2.5 rounded-full text-sm font-semibold transition-all duration-200 whitespace-nowrap
+                                        ${selectedCategory === cat
+                          ? 'bg-[#1D1D1F] text-white shadow-lg'
+                          : 'bg-white/50 text-gray-500 hover:bg-white hover:text-[#1D1D1F]'}`}
+                    >
+                      {cat}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Scrollable Grid */}
+              <div className="flex-1 overflow-y-auto pr-2 pb-20 lg:pb-0">
+                <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
+                  {filteredProducts.map((product) => (
+                    <ProductCard key={product.id} product={product} onAddToCart={handleAddToCart} />
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* --- RIGHT: CART SIDEBAR --- */}
+            <div className="lg:col-span-4 h-full">
+              <GlassCard className="h-full flex flex-col rounded-[32px] border-white/60 shadow-[0_20px_40px_rgba(0,0,0,0.05)]">
+
+                {/* Cart Header */}
+                <div className="p-6 border-b border-gray-100/50 flex justify-between items-center bg-white/40">
+                  <div>
+                    <h2 className="text-xl font-bold text-[#1D1D1F]">Current Order</h2>
+                    <span className="text-sm text-gray-400">Order #20349</span>
+                  </div>
+                  <button
+                    onClick={() => setCart([])}
+                    className="p-2 hover:bg-gray-100 rounded-full text-gray-400 hover:text-red-500 transition-colors"
+                    title="Clear Cart"
+                  >
+                    <RefreshCcw size={18} />
+                  </button>
+                </div>
+
+                {/* Cart Items */}
+                <div className="flex-1 overflow-y-auto p-4 space-y-1">
+                  {cart.length === 0 ? (
+                    <div className="h-full flex flex-col items-center justify-center text-gray-400 space-y-4 opacity-50">
+                      <ShoppingBag size={48} strokeWidth={1} />
+                      <p>Cart is empty</p>
+                    </div>
+                  ) : (
+                    cart.map(item => <CartItemRow key={item.id} item={item} onUpdate={handleUpdateQuantity} />)
+                  )}
+                </div>
+
+                {/* Totals & Actions */}
+                <div className="p-6 bg-white/50 border-t border-gray-100/50 space-y-6">
+                  <div className="space-y-3">
+                    <div className="flex justify-between text-gray-500">
+                      <span>Subtotal</span>
+                      <span>${subtotal.toFixed(2)}</span>
+                    </div>
+                    <div className="flex justify-between text-gray-500">
+                      <span>Tax (5%)</span>
+                      <span>${tax.toFixed(2)}</span>
+                    </div>
+                    <div className="flex justify-between text-2xl font-bold text-[#1D1D1F] pt-2 border-t border-gray-200">
+                      <span>Total</span>
+                      <span>${total.toFixed(2)}</span>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <button
+                      onClick={() => cart.length > 0 && setIsModalOpen(true)}
+                      disabled={cart.length === 0}
+                      className="col-span-2 py-4 rounded-2xl bg-[#1D1D1F] text-white font-bold text-lg shadow-xl hover:bg-black hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 disabled:hover:scale-100 flex items-center justify-center gap-2"
+                    >
+                      Charge ${total.toFixed(2)}
+                    </button>
+
+                    <button className="py-3 rounded-xl bg-white border border-gray-200 font-semibold text-[#1D1D1F] hover:bg-gray-50 transition-colors flex items-center justify-center gap-2">
+                      <CreditCard size={18} /> Card
+                    </button>
+                    <button className="py-3 rounded-xl bg-white border border-gray-200 font-semibold text-[#1D1D1F] hover:bg-gray-50 transition-colors flex items-center justify-center gap-2">
+                      <Banknote size={18} /> Cash
+                    </button>
+                  </div>
+                </div>
+              </GlassCard>
+            </div>
+
           </div>
         </main>
 
-        {/* === Cart/Bill (Right Column) === */}
-        {/* Aside uses the new surface color */}
-        <aside className="lg:col-span-1 bg-[var(--color-bg-surface)] h-screen flex flex-col mt-24">
-
-          {/* Order Header uses new border and text color */}
-          <header className="p-6 border-b border-[var(--color-border)]">
-            <h2 className="text-3xl font-bold text-[var(--color-text-primary)]">Current Order</h2>
-          </header>
-
-          {/* Cart Items use new text colors */}
-          <div className="flex-grow p-6 space-y-4 overflow-y-auto">
-            {cart.length === 0 ? (
-              <p className="text-lg">No items in order.</p>
-            ) : (
-              cart.map((item) => (
-                <div key={item.id} className="flex justify-between items-center">
-                  <div>
-                    <h4 className="text-lg font-bold text-[var(--color-text-primary)]">{item.name}</h4>
-                    <p className="text-sm">Qty: {item.quantity}</p>
-                  </div>
-                  <span className="text-lg font-bold text-[var(--color-text-primary)]">
-                    €{(item.price * item.quantity).toFixed(2)}
-                  </span>
-                </div>
-              ))
-            )}
-          </div>
-
-          {/* Order Summary uses new border and text colors */}
-          <div className="p-6 border-t border-[var(--color-border)] space-y-3">
-            <div className="flex justify-between text-lg">
-              <span>Subtotal</span>
-              <span className="text-[var(--color-text-primary)]">${subtotal.toFixed(2)}</span>
-            </div>
-            <div className="flex justify-between text-lg">
-              <span>Tax (5%)</span>
-              <span className="text-[var(--color-text-primary)]">${tax.toFixed(2)}</span>
-            </div>
-            {/* Total uses accent green, which is unchanged and correct */}
-            <div className="flex justify-between text-3xl font-extrabold text-[var(--color-primary-green)]">
-              <span>Total</span>
-              <span>€{total.toFixed(2)}</span>
-            </div>
-          </div>
-
-          {/* Payment Controls (Unchanged) */}
-          <div className="p-6 grid grid-cols-2 gap-4">
-            <button className={btnPrimary} onClick={handleCharge}>
-              Charge
-            </button>
-            <button className={btnSecondary}>Pay by Card</button>
-            <button className={btnSecondaryAlt}>Pay by Cash</button>
-          </div>
-        </aside>
+        <PaymentModal
+          isOpen={isModalOpen}
+          total={total}
+          onClose={() => { setIsModalOpen(false); setCart([]); }}
+        />
       </div>
-
-      {/* --- Payment Modal --- */}
-      <PaymentModal
-        isOpen={isModalOpen}
-        total={total}
-        onClose={handleCloseModal}
-      />
-    </>
+    </div>
   );
 }

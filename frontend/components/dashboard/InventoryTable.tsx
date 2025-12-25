@@ -32,7 +32,7 @@ export function InventoryTable({ userId: propUserId }: Props) {
       try {
         setLoading(true);
         setError(null);
-        
+
         const userId = propUserId || getUserId();
         if (!userId) {
           throw new Error('No user ID available');
@@ -41,11 +41,11 @@ export function InventoryTable({ userId: propUserId }: Props) {
         console.log('📦 Fetching inventory items for user:', userId);
         const response = await api.getItems(userId);
         const data = await response.json();
-        
+
         const itemsList = data.items || data || [];
         console.log('📦 Inventory items received:', itemsList);
         setItems(itemsList);
-        
+
       } catch (err) {
         console.error('❌ Error fetching inventory:', err);
         setError(err instanceof Error ? err.message : 'Failed to fetch inventory');
@@ -53,91 +53,80 @@ export function InventoryTable({ userId: propUserId }: Props) {
         setLoading(false);
       }
     };
-    
+
     fetchItems();
   }, [propUserId]);
 
   if (loading) {
     return (
-      <div className="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
-        <div className="flex items-center justify-center space-x-2">
-          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
-          {/* Translated string */}
-          <span className="text-gray-500 dark:text-gray-400">{t('loading')}</span>
-        </div>
+      <div className="p-6 flex items-center justify-center space-x-2 text-gray-400">
+        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-current"></div>
+        <span className="text-sm">{t('loading')}</span>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
-        <div className="text-center">
-          {/* Translated string */}
-          <div className="text-red-500 mb-2">{t('errorTitle')}</div>
-          <button 
-            onClick={() => window.location.reload()} 
-            className="text-blue-600 hover:text-blue-500 text-sm underline"
-          >
-            {/* Translated string */}
-            {t('retry')}
-          </button>
-        </div>
+      <div className="p-6 text-center text-red-500">
+        <div className="text-sm mb-2">{t('errorTitle')}</div>
+        <button
+          onClick={() => window.location.reload()}
+          className="text-[#0066CC] hover:underline text-xs"
+        >
+          {t('retry')}
+        </button>
       </div>
     );
   }
 
   return (
-    <div className="p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md">
-      <div className="flex items-center justify-between mb-4">
-        {/* Translated string */}
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{t('title')}</h3>
-        <span className="text-sm text-gray-500 dark:text-gray-400">
-          {/* Translated string with pluralization */}
+    <div className="w-full">
+      <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
+        <h3 className="text-sm font-semibold text-[#1D1D1F]">{t('title')}</h3>
+        <span className="text-xs font-medium text-gray-400 bg-gray-50 px-2 py-1 rounded-full">
           {t('itemCount', { count: items.length })}
         </span>
       </div>
-      
+
       <div className="overflow-x-auto">
-        <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-          <thead className="bg-gray-50 dark:bg-gray-700">
-            <tr>
-              {/* Translated headers */}
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">{t('header.productName')}</th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">{t('header.country')}</th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">{t('header.quantity')}</th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">{t('header.price')}</th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">{t('header.month')}</th>
+        <table className="min-w-full">
+          <thead>
+            <tr className="border-b border-gray-100">
+              <th scope="col" className="px-6 py-3 text-left text-[10px] font-bold text-gray-400 uppercase tracking-widest">{t('header.productName')}</th>
+              <th scope="col" className="px-6 py-3 text-left text-[10px] font-bold text-gray-400 uppercase tracking-widest">{t('header.country')}</th>
+              <th scope="col" className="px-6 py-3 text-left text-[10px] font-bold text-gray-400 uppercase tracking-widest">{t('header.quantity')}</th>
+              <th scope="col" className="px-6 py-3 text-left text-[10px] font-bold text-gray-400 uppercase tracking-widest">{t('header.price')}</th>
+              <th scope="col" className="px-6 py-3 text-left text-[10px] font-bold text-gray-400 uppercase tracking-widest">{t('header.month')}</th>
             </tr>
           </thead>
-          <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+          <tbody className="divide-y divide-gray-50">
             {items.length === 0 ? (
               <tr>
-                <td colSpan={5} className="px-6 py-4 text-center text-gray-500 dark:text-gray-400">
+                <td colSpan={5} className="px-6 py-8 text-center text-gray-400">
                   <div className="flex flex-col items-center space-y-2">
-                    <div className="text-gray-400">📦</div>
-                    {/* Translated empty state */}
-                    <div>{t('empty.message')}</div>
-                    <div className="text-xs">{t('empty.prompt')}</div>
+                    <span className="text-2xl opacity-50">📦</span>
+                    <div className="text-sm font-medium">{t('empty.message')}</div>
+                    <div className="text-xs opacity-70">{t('empty.prompt')}</div>
                   </div>
                 </td>
               </tr>
             ) : (
               items.map((item, index) => (
-                <tr key={item._id || index} className="hover:bg-gray-50 dark:hover:bg-gray-700">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
+                <tr key={item._id || index} className="group hover:bg-gray-50/80 transition-colors">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-[#1D1D1F]">
                     {item.product_name}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300 capitalize">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 capitalize">
                     {item.country}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     {item.Quantity}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowTwrap text-sm text-gray-500 dark:text-gray-300">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-[#1D1D1F]">
                     €{(item.selling_price || item.cost_price || 0).toFixed(2)}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     {item.month}
                   </td>
                 </tr>
